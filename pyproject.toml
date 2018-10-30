@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "heatmapx"
+version = "0.1.0"
+description = "Flexible, intuitive heatmap creation on Network X graphs"
+authors = ["drmrd"]
+license = "BSD-3-Clause"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+networkx = "^2.4"
+matplotlib = "^3.1"
+
+[tool.poetry.dev-dependencies]
+ipython = "^7.11.1"
+jupyter = "^1.0.0"
+pytest = "^5.3.2"
+python-language-server = {extras = ["all"], version = "^0.31.4"}
+jedi = "^0.15.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
