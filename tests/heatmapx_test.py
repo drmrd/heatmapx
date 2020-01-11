@@ -22,3 +22,9 @@ class TestTemperatureGraph:
         G = input_class()
         G_temperatures = hx.temperature_graph(G, source_nodes=[])
         assert isinstance(G_temperatures, input_class)
+
+    def test_output_has_same_graph_structure_as_input(self):
+        G = nx.Graph()
+        G_temperatures = hx.temperature_graph(G, source_nodes=[])
+        assert set(G_temperatures.nodes()) == set(G.nodes())
+        assert set(G_temperatures.edges()) == set(G.edges())
