@@ -9,5 +9,5 @@ def temperature_graph(
     G: nx.Graph,
     source_nodes: Iterable,
 ) -> nx.Graph:
-    T = nx.Graph()
+    T = type(G)()
     return T

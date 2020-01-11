@@ -1,5 +1,7 @@
-import heatmapx as hx
 import networkx as nx
+import pytest
+
+import heatmapx as hx
 
 
 class TestHeatmapXPackaging:
@@ -13,3 +15,10 @@ class TestTemperatureGraph:
         G_temperatures = hx.temperature_graph(G, source_nodes=[])
         assert isinstance(G_temperatures, nx.Graph)
         assert G_temperatures != G
+
+    @pytest.mark.parametrize(
+        'input_class', [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph])
+    def test_output_type_matches_its_input(self, input_class):
+        G = input_class()
+        G_temperatures = hx.temperature_graph(G, source_nodes=[])
+        assert isinstance(G_temperatures, input_class)
