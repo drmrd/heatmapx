@@ -28,3 +28,15 @@ class TestTemperatureGraph:
         G_temperatures = hx.temperature_graph(G, source_nodes=[])
         assert set(G_temperatures.nodes()) == set(G.nodes())
         assert set(G_temperatures.edges()) == set(G.edges())
+
+    def test_all_output_nodes_and_edges_store_heat_data(self):
+        heat_key = 'heat goes here!'
+
+        cyclic_graph = nx.Graph([(0, 1), (1, 2), (2, 0)])
+        cyclic_temperature_graph = hx.temperature_graph(
+            cyclic_graph, source_nodes=[], heat_key=heat_key)
+
+        for node in cyclic_graph.nodes():
+            assert heat_key in cyclic_temperature_graph.nodes[node]
+        for source, target in cyclic_temperature_graph.edges():
+            assert heat_key in cyclic_temperature_graph.edges[source, target]
