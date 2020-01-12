@@ -45,3 +45,12 @@ class TestTemperatureGraph:
         cyclic_graph = nx.cycle_graph(3)
         cyclic_temperature_graph = hx.temperature_graph(cyclic_graph, source_nodes=[])
         assert 'heat' in cyclic_temperature_graph.nodes[0]
+
+    def test_heat_data_is_updated_throughout_graph(self):
+        cyclic_graph = nx.cycle_graph(3)
+        cyclic_temperature_graph = hx.temperature_graph(cyclic_graph, source_nodes=[0])
+
+        for node in cyclic_graph.nodes:
+            assert cyclic_temperature_graph.nodes[node]['heat'] == 1
+        for edge in cyclic_graph.edges:
+            assert cyclic_temperature_graph.edges[edge]['heat'] == 1
