@@ -21,11 +21,7 @@ def temperature_graph(
         visited_nodes = set()
         for edges_at_depth in _edge_bfs_by_depth(T, [source]):
             for edge in edges_at_depth:
-                T.edges[edge][heat_key] += heat_increment
-                for node in edge:
-                    if node not in visited_nodes:
-                        T.nodes[node][heat_key] += heat_increment
-                        visited_nodes.add(node)
+                _update_temperature(T, edge, heat_key, heat_increment, visited_nodes)
     return T
 
 
@@ -52,3 +48,9 @@ def _group_by_sources(edges_iterator, initial_sources):
     yield current_group
 
 
+def _update_temperature(G, edge, heat_key, heat_increment, visited_nodes):
+    G.edges[edge][heat_key] += heat_increment
+    for node in edge:
+        if node not in visited_nodes:
+            G.nodes[node][heat_key] += heat_increment
+            visited_nodes.add(node)
