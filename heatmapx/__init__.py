@@ -1,8 +1,9 @@
 __version__ = '0.1.0'
 __all__ = ['temperature_graph']
 
-from numbers import Real
-from typing import Iterable
+import itertools
+
+from typing import Iterable, Optional, Union
 
 import networkx as nx
 
@@ -10,18 +11,25 @@ import networkx as nx
 def temperature_graph(
     G: nx.Graph,
     source_nodes: Iterable,
-    heat_increment: Real = 1,
+    heat_increments: Union[Iterable, float] = 1,
     heat_key: str = 'heat'
 ) -> nx.Graph:
     T = type(G)()
     T.add_nodes_from(G.nodes(), **{heat_key: 0})
     T.add_edges_from(G.edges(), **{heat_key: 0})
 
+    try:
+        heat_increments = iter(heat_increments)
+    except TypeError:
+        heat_increments = itertools.repeat(heat_increments)
+
     for source in source_nodes:
         visited_nodes = set()
-        for edges_at_depth in _edge_bfs_by_depth(T, [source]):
+        data_by_depth = zip(_edge_bfs_by_depth(T, [source]), heat_increments)
+        for edges_at_depth, heat_increment_at_depth in data_by_depth:
             for edge in edges_at_depth:
-                _update_temperature(T, edge, heat_key, heat_increment, visited_nodes)
+                _update_temperature(T, edge, heat_key, heat_increment_at_depth,
+                                    visited_nodes)
     return T
 
 
