@@ -46,11 +46,38 @@ class TestTemperatureGraph:
         cyclic_temperature_graph = hx.temperature_graph(cyclic_graph, source_nodes=[])
         assert 'heat' in cyclic_temperature_graph.nodes[0]
 
-    def test_heat_data_is_updated_throughout_graph(self):
-        cyclic_graph = nx.cycle_graph(3)
-        cyclic_temperature_graph = hx.temperature_graph(cyclic_graph, source_nodes=[0])
+    @pytest.mark.parametrize(
+        'graph',
+        [nx.cycle_graph(3),
+         nx.cycle_graph(5, create_using=nx.DiGraph),
+         nx.karate_club_graph()]
+    )
+    def test_heat_data_is_updated_throughout_graph(self, graph):
+        graph = nx.cycle_graph(3)
+        temperature_graph = hx.temperature_graph(graph, source_nodes=[0])
 
-        for node in cyclic_graph.nodes:
-            assert cyclic_temperature_graph.nodes[node]['heat'] == 1
-        for edge in cyclic_graph.edges:
-            assert cyclic_temperature_graph.edges[edge]['heat'] == 1
+        for node in graph.nodes:
+            assert temperature_graph.nodes[node]['heat'] == 1
+        for edge in graph.edges:
+            assert temperature_graph.edges[edge]['heat'] == 1
+
+    def test_heat_data_is_only_updated_in_connected_components_of_source_nodes(self):
+        graph = nx.Graph([(0, 1), (1, 2), (2, 0),
+                          (3, 4), (4, 5), (5, 3)])
+        graph.add_nodes_from([6, 7, 8])
+
+        temperature_graph = hx.temperature_graph(graph, [0])
+
+        for node in range(3):
+            assert temperature_graph.nodes[node]['heat'] == 1
+        for node in range(3, 9):
+            assert temperature_graph.nodes[node]['heat'] == 0
+
+    def test_heat_from_multiple_sources_accumulates_additively(self):
+        square_graph = nx.Graph([(0, 1), (0, 2), (1, 3), (2, 3)])
+        temperature_graph = hx.temperature_graph(square_graph, [0, 3])
+
+        for node in square_graph.nodes:
+            assert temperature_graph.nodes[node]['heat'] == 2
+        for edge in square_graph.edges:
+            assert temperature_graph.edges[edge]['heat'] == 2
