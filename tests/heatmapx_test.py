@@ -105,3 +105,28 @@ class TestTemperatureGraph:
             assert temperature_graph.nodes[node]['heat'] == 0.5
         for edge in set(temperature_graph.edges) - incident_edges:
             assert temperature_graph.edges[edge]['heat'] == 0.5
+
+    def test_can_limit_distance_heat_spreads_from_heat_sources(self):
+        square_graph = nx.Graph([(0, 1), (0, 2), (1, 3), (2, 3)])
+
+        heat_source = 0
+        temperature_graph = hx.temperature_graph(
+            square_graph,
+            source_nodes=[heat_source],
+            heat_increments=[1, 0.5],
+            depth_limit=1
+        )
+
+        heat_source_and_neighbors = {heat_source}.union(
+            set(temperature_graph.neighbors(heat_source)))
+        incident_edges = set(temperature_graph.edges(heat_source))
+
+        for neighbor in heat_source_and_neighbors:
+            assert temperature_graph.nodes[neighbor]['heat'] == 1
+        for edge in incident_edges:
+            assert temperature_graph.edges[edge]['heat'] == 1
+
+        for node in set(temperature_graph.nodes) - heat_source_and_neighbors:
+            assert temperature_graph.nodes[node]['heat'] == 0
+        for edge in set(temperature_graph.edges) - incident_edges:
+            assert temperature_graph.edges[edge]['heat'] == 0
