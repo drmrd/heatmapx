@@ -11,6 +11,7 @@ import networkx as nx
 def temperature_graph(
     G: nx.Graph,
     source_nodes: Iterable,
+    depth_limit: Optional[int] = None,
     heat_increments: Union[Iterable, float] = 1,
     heat_key: str = 'heat'
 ) -> nx.Graph:
@@ -25,11 +26,14 @@ def temperature_graph(
 
     for source in source_nodes:
         visited_nodes = set()
-        data_by_depth = zip(_edge_bfs_by_depth(T, [source]), heat_increments)
-        for edges_at_depth, heat_increment_at_depth in data_by_depth:
+        data_by_depth = itertools.islice(
+            zip(_edge_bfs_by_depth(T, [source]), heat_increments),
+            depth_limit)
+        for edges_at_depth, heat_increment in data_by_depth:
             for edge in edges_at_depth:
-                _update_temperature(T, edge, heat_key, heat_increment_at_depth,
-                                    visited_nodes)
+                _update_edge_temperature(T, edge, heat_key, heat_increment)
+                _update_node_temperatures(T, edge, heat_key, heat_increment,
+                                          visited_nodes)
     return T
 
 
@@ -56,9 +60,11 @@ def _group_by_sources(edges_iterator, initial_sources):
     yield current_group
 
 
-def _update_temperature(G, edge, heat_key, heat_increment, visited_nodes):
+def _update_edge_temperature(G, edge, heat_key, heat_increment):
     G.edges[edge][heat_key] += heat_increment
-    for node in edge:
-        if node not in visited_nodes:
-            G.nodes[node][heat_key] += heat_increment
-            visited_nodes.add(node)
+
+
+def _update_node_temperatures(G, nodes, heat_key, heat_increment, visited_nodes):
+    for node in set(nodes).difference(visited_nodes):
+        G.nodes[node][heat_key] += heat_increment
+        visited_nodes.add(node)
