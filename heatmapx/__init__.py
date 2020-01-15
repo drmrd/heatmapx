@@ -15,6 +15,48 @@ def temperature_graph(
     heat_increments: Union[Iterable, float] = 1,
     heat_key: str = 'heat'
 ) -> nx.Graph:
+    """
+    Calculate temperatures radiating from heat sources in a graph.
+
+    Temperature values are initially set to 0 and then updated throughout `G` in
+    a breadth-first manner beginning at each node in `source_nodes`.  For each
+    source node `s`, the temperature of each edge `e` and its incident nodes in
+    `G` are updated according to `heat_increments` and how many edges away they
+    are from the source node `s`.  This process is repeated for every source
+    node, with temperatures from multiple source nodes contibuting additively to
+    the overall temperature of the nodes and edges in the graph.
+
+
+    Parameters
+    ----------
+    G : networkx.Graph
+        The graph from which to generate a heatmap.  A copy of the graph will be
+        produced by default.
+
+    source_nodes : Iterable
+        The nodes serving as heat sources in `G`.
+
+    depth_limit : Optional[int]
+        The maximum number of edges away from a source node to update
+        temperature values.  (Default: 0)
+
+    heat_increments : Union[Iterable, float]
+        A sequence whose `n`-th element gives, for each source node `s`, the
+        amount to update the temperature of each node and edge that is `n`
+        breadth-first layers away from `s`.  A constant value may also be
+        provided to apply to all nodes and edges in the same connected component
+        as each source node.  (Default: 1)
+
+    heat_key : str
+        The name of the node and edge attribute where temperature values will be
+        stored in `T`.
+
+    Returns
+    -------
+    T : networkx.Graph
+        A copy of `G` in which every node and edge has its temperature stored in
+        a `heat_key` attribute.
+    """
     T = type(G)()
     T.add_nodes_from(G.nodes(), **{heat_key: 0})
     T.add_edges_from(G.edges(), **{heat_key: 0})
