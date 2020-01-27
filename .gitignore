@@ -1,3 +1,7 @@
 **/__pycache__
 **/.ipynb_checkpoints
 **/.pytest_cache
+/.mypy_cache/3.8/
+/.idea/
+/dist/
+/.dir-locals.el
