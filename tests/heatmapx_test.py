@@ -82,6 +82,21 @@ class TestTemperatureGraph:
         for edge in square_graph.edges:
             assert temperature_graph.edges[edge]['heat'] == 2
 
+    def test_heat_distribution_respects_edge_directedness(self):
+        square_graph = nx.DiGraph([(0, 1), (0, 2), (1, 3), (2, 3)])
+        temperature_graph = hx.temperature_graph(square_graph, [1, 2])
+
+        assert temperature_graph.nodes[0]['heat'] == 0
+        assert temperature_graph.edges[0, 1]['heat'] == 0
+        assert temperature_graph.edges[0, 2]['heat'] == 0
+
+        assert temperature_graph.nodes[1]['heat'] == 1
+        assert temperature_graph.nodes[2]['heat'] == 1
+        assert temperature_graph.edges[1, 3]['heat'] == 1
+        assert temperature_graph.edges[2, 3]['heat'] == 1
+
+        assert temperature_graph.nodes[3]['heat'] == 2
+
     @pytest.mark.parametrize(
         'graph_class',
         [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
