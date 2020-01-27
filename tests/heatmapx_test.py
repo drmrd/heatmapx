@@ -17,7 +17,9 @@ class TestTemperatureGraph:
         assert G_temperatures != G
 
     @pytest.mark.parametrize(
-        'input_class', [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph])
+        'input_class',
+        [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    )
     def test_output_type_matches_its_input(self, input_class):
         G = input_class()
         G_temperatures = hx.temperature_graph(G, source_nodes=[])
@@ -47,13 +49,11 @@ class TestTemperatureGraph:
         assert 'heat' in cyclic_temperature_graph.nodes[0]
 
     @pytest.mark.parametrize(
-        'graph',
-        [nx.cycle_graph(3),
-         nx.cycle_graph(5, create_using=nx.DiGraph),
-         nx.karate_club_graph()]
+        'graph_class',
+        [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
     )
-    def test_heat_data_is_updated_throughout_graph(self, graph):
-        graph = nx.cycle_graph(3)
+    def test_heat_data_is_updated_throughout_graph(self, graph_class):
+        graph = nx.complete_graph(7, create_using=graph_class)
         temperature_graph = hx.temperature_graph(graph, source_nodes=[0])
 
         for node in graph.nodes:
@@ -61,9 +61,13 @@ class TestTemperatureGraph:
         for edge in graph.edges:
             assert temperature_graph.edges[edge]['heat'] == 1
 
-    def test_heat_data_is_only_updated_in_connected_components_of_source_nodes(self):
-        graph = nx.Graph([(0, 1), (1, 2), (2, 0),
-                          (3, 4), (4, 5), (5, 3)])
+    @pytest.mark.parametrize(
+        'graph_class',
+        [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    )
+    def test_heat_data_is_only_updated_in_connected_components_of_source_nodes(self, graph_class):
+        graph: nx.Graph = graph_class([(0, 1), (1, 2), (2, 0),
+                                       (3, 4), (4, 5), (5, 3)])
         graph.add_nodes_from([6, 7, 8])
 
         temperature_graph = hx.temperature_graph(graph, [0])
@@ -75,7 +79,7 @@ class TestTemperatureGraph:
 
     def test_heat_from_multiple_sources_accumulates_additively(self):
         square_graph = nx.Graph([(0, 1), (0, 2), (1, 3), (2, 3)])
-        temperature_graph = hx.temperature_graph(square_graph, [0, 3])
+        temperature_graph = hx.temperature_graph(square_graph, [1, 2])
 
         for node in square_graph.nodes:
             assert temperature_graph.nodes[node]['heat'] == 2
