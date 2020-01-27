@@ -5,3 +5,5 @@
 /.idea/
 /dist/
 /.dir-locals.el
+.tox
+/heatmapx.egg-info/
