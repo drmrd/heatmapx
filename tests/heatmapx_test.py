@@ -82,8 +82,12 @@ class TestTemperatureGraph:
         for edge in square_graph.edges:
             assert temperature_graph.edges[edge]['heat'] == 2
 
-    def test_accepts_iterable_of_depth_specific_heat_increments(self):
-        square_graph = nx.Graph([(0, 1), (0, 2), (1, 3), (2, 3)])
+    @pytest.mark.parametrize(
+        'graph_class',
+        [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    )
+    def test_accepts_iterable_of_depth_specific_heat_increments(self, graph_class):
+        square_graph = graph_class([(0, 1), (0, 2), (1, 3), (2, 3)])
 
         heat_source = 0
         temperature_graph = hx.temperature_graph(
@@ -94,7 +98,7 @@ class TestTemperatureGraph:
 
         heat_source_and_neighbors = {heat_source}.union(
             set(temperature_graph.neighbors(heat_source)))
-        incident_edges = set(temperature_graph.edges(heat_source))
+        incident_edges = set(graph_edges(temperature_graph, heat_source))
 
         for neighbor in heat_source_and_neighbors:
             assert temperature_graph.nodes[neighbor]['heat'] == 1
@@ -103,11 +107,15 @@ class TestTemperatureGraph:
 
         for node in set(temperature_graph.nodes) - heat_source_and_neighbors:
             assert temperature_graph.nodes[node]['heat'] == 0.5
-        for edge in set(temperature_graph.edges) - incident_edges:
+        for edge in set(graph_edges(temperature_graph)) - incident_edges:
             assert temperature_graph.edges[edge]['heat'] == 0.5
 
-    def test_can_limit_distance_heat_spreads_from_heat_sources(self):
-        square_graph = nx.Graph([(0, 1), (0, 2), (1, 3), (2, 3)])
+    @pytest.mark.parametrize(
+        'graph_class',
+        [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    )
+    def test_can_limit_distance_heat_spreads_from_heat_sources(self, graph_class):
+        square_graph = graph_class([(0, 1), (0, 2), (1, 3), (2, 3)])
 
         heat_source = 0
         temperature_graph = hx.temperature_graph(
@@ -119,7 +127,7 @@ class TestTemperatureGraph:
 
         heat_source_and_neighbors = {heat_source}.union(
             set(temperature_graph.neighbors(heat_source)))
-        incident_edges = set(temperature_graph.edges(heat_source))
+        incident_edges = set(graph_edges(temperature_graph, heat_source))
 
         for neighbor in heat_source_and_neighbors:
             assert temperature_graph.nodes[neighbor]['heat'] == 1
@@ -128,5 +136,12 @@ class TestTemperatureGraph:
 
         for node in set(temperature_graph.nodes) - heat_source_and_neighbors:
             assert temperature_graph.nodes[node]['heat'] == 0
-        for edge in set(temperature_graph.edges) - incident_edges:
+        for edge in set(graph_edges(temperature_graph)) - incident_edges:
             assert temperature_graph.edges[edge]['heat'] == 0
+
+
+def graph_edges(graph, nbunch=None, data=False):
+    edges_kwargs = {'nbunch': nbunch, 'data': data}
+    if isinstance(graph, nx.MultiGraph):
+        edges_kwargs['keys'] = True
+    return graph.edges(**edges_kwargs)

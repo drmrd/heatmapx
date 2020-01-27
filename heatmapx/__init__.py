@@ -96,7 +96,7 @@ def _group_by_sources(edges_iterator, initial_sources):
             current_group.append(current_edge)
         else:
             yield current_group
-            current_group_sources = {target for _, target in current_group}
+            current_group_sources = {target for _, target, *_ in current_group}
             current_group = [current_edge]
 
     yield current_group
