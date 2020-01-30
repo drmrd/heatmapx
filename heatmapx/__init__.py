@@ -1,5 +1,6 @@
-__version__ = '0.1.0'
 """Create heatmaps from NetworkX graphs."""
+
+__version__ = '0.1.3'
 __all__ = ['temperature_graph']
 
 import itertools
