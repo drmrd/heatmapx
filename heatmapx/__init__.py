@@ -74,7 +74,7 @@ def temperature_graph(
         for edges_at_depth, heat_increment in data_by_depth:
             for edge in edges_at_depth:
                 _update_edge_temperature(T, edge, heat_key, heat_increment)
-                _update_node_temperatures(T, edge, heat_key, heat_increment,
+                _update_node_temperatures(T, edge[:2], heat_key, heat_increment,
                                           visited_nodes)
     return T
 
