@@ -65,6 +65,24 @@ class TestTemperatureGraph:
         'graph_class',
         [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
     )
+    @pytest.mark.parametrize(
+        'node_labels',
+        [[1, 3, 5, 7],
+         ['n1', 'n2', 'n3', 'n4']]
+    )
+    def test_supports_common_graph_and_node_label_types(self, graph_class, node_labels):
+        graph = graph_class(list(zip(node_labels[:-1], node_labels[1:])))
+        temperature_graph = hx.temperature_graph(graph, source_nodes=[node_labels[0]])
+
+        for node in graph.nodes:
+            assert temperature_graph.nodes[node]['heat'] == 1
+        for edge in graph.edges:
+            assert temperature_graph.edges[edge]['heat'] == 1
+
+    @pytest.mark.parametrize(
+        'graph_class',
+        [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    )
     def test_heat_data_is_only_updated_in_connected_components_of_source_nodes(self, graph_class):
         graph: nx.Graph = graph_class([(0, 1), (1, 2), (2, 0),
                                        (3, 4), (4, 5), (5, 3)])
