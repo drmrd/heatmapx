@@ -7,7 +7,7 @@ import heatmapx as hx
 class TestTemperatureGraph:
     def test_given_a_graph_and_source_nodes_returns_a_new_graph(self):
         G = nx.Graph()
-        G_temperatures = hx.temperature_graph(G, source_nodes=[])
+        G_temperatures = hx.temperature_graph(G, sources=[])
         assert isinstance(G_temperatures, nx.Graph)
         assert G_temperatures != G
 
@@ -17,12 +17,12 @@ class TestTemperatureGraph:
     )
     def test_output_type_matches_its_input(self, input_class):
         G = input_class()
-        G_temperatures = hx.temperature_graph(G, source_nodes=[])
+        G_temperatures = hx.temperature_graph(G, sources=[])
         assert isinstance(G_temperatures, input_class)
 
     def test_output_has_same_graph_structure_as_input(self):
         G = nx.Graph()
-        G_temperatures = hx.temperature_graph(G, source_nodes=[])
+        G_temperatures = hx.temperature_graph(G, sources=[])
         assert set(G_temperatures.nodes()) == set(G.nodes())
         assert set(G_temperatures.edges()) == set(G.edges())
 
@@ -31,7 +31,7 @@ class TestTemperatureGraph:
 
         cyclic_graph = nx.cycle_graph(3)
         cyclic_temperature_graph = hx.temperature_graph(
-            cyclic_graph, source_nodes=[], heat_key=heat_key)
+            cyclic_graph, sources=[], key=heat_key)
 
         for node in cyclic_graph.nodes():
             assert heat_key in cyclic_temperature_graph.nodes[node]
@@ -40,7 +40,7 @@ class TestTemperatureGraph:
 
     def test_the_default_heat_key_is_heat(self):
         cyclic_graph = nx.cycle_graph(3)
-        cyclic_temperature_graph = hx.temperature_graph(cyclic_graph, source_nodes=[])
+        cyclic_temperature_graph = hx.temperature_graph(cyclic_graph, sources=[])
         assert 'heat' in cyclic_temperature_graph.nodes[0]
 
     @pytest.mark.parametrize(
@@ -49,7 +49,7 @@ class TestTemperatureGraph:
     )
     def test_heat_data_is_updated_throughout_graph(self, graph_class):
         graph = nx.complete_graph(7, create_using=graph_class)
-        temperature_graph = hx.temperature_graph(graph, source_nodes=[0])
+        temperature_graph = hx.temperature_graph(graph, sources=[0])
 
         for node in graph.nodes:
             assert temperature_graph.nodes[node]['heat'] == 1
@@ -67,7 +67,7 @@ class TestTemperatureGraph:
     )
     def test_supports_common_graph_and_node_label_types(self, graph_class, node_labels):
         graph = graph_class(list(zip(node_labels[:-1], node_labels[1:])))
-        temperature_graph = hx.temperature_graph(graph, source_nodes=[node_labels[0]])
+        temperature_graph = hx.temperature_graph(graph, sources=[node_labels[0]])
 
         for node in graph.nodes:
             assert temperature_graph.nodes[node]['heat'] == 1
@@ -124,8 +124,8 @@ class TestTemperatureGraph:
         heat_source = 0
         temperature_graph = hx.temperature_graph(
             square_graph,
-            source_nodes=[heat_source],
-            heat_increments=[1, 0.5]
+            sources=[heat_source],
+            increments=[1, 0.5]
         )
 
         heat_source_and_neighbors = {heat_source}.union(
@@ -152,9 +152,9 @@ class TestTemperatureGraph:
         heat_source = 0
         temperature_graph = hx.temperature_graph(
             square_graph,
-            source_nodes=[heat_source],
-            heat_increments=[1, 0.5],
-            depth_limit=1
+            sources=[heat_source],
+            increments=[1, 0.5],
+            max_depth=1
         )
 
         heat_source_and_neighbors = {heat_source}.union(

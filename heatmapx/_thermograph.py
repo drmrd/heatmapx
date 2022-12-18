@@ -7,10 +7,10 @@ import networkx as nx
 
 def temperature_graph(
     G: nx.Graph,
-    source_nodes: Iterable,
-    depth_limit: Optional[int] = None,
-    heat_increments: Union[Iterable, float] = 1,
-    heat_key: str = 'heat'
+    sources: Iterable,
+    max_depth: Optional[int] = None,
+    increments: Union[Iterable, float] = 1,
+    key: Optional[str] = 'heat'
 ) -> nx.Graph:
     """
     Calculate temperatures radiating from heat sources in a graph.
@@ -30,48 +30,48 @@ def temperature_graph(
         The graph from which to generate a heatmap.  A copy of the graph will be
         produced by default.
 
-    source_nodes : Iterable
+    sources : Iterable
         The nodes serving as heat sources in `G`.
 
-    depth_limit : Optional[int]
+    max_depth : Optional[int]
         The maximum number of edges away from a source node to update
-        temperature values.  (Default: 0)
+        temperature values.  (Default: None)
 
-    heat_increments : Union[Iterable, float]
+    increments : Union[Iterable, float]
         A sequence whose `n`-th element gives, for each source node `s`, the
         amount to update the temperature of each node and edge that is `n`
         breadth-first layers away from `s`.  A constant value may also be
         provided to apply to all nodes and edges in the same connected component
         as each source node.  (Default: 1)
 
-    heat_key : str
+    key : Optional[str]
         The name of the node and edge attribute where temperature values will be
         stored in `T`.
 
     Returns
     -------
     T : networkx.Graph
-        A copy of `G` in which every node and edge has its temperature stored in
-        a `heat_key` attribute.
+        A copy of `G` in which each node and edge has its temperature stored in
+        its `key` attribute.
     """
     T = type(G)()
-    T.add_nodes_from(G.nodes(), **{heat_key: 0})
-    T.add_edges_from(G.edges(), **{heat_key: 0})
+    T.add_nodes_from(G.nodes(), **{key: 0})
+    T.add_edges_from(G.edges(), **{key: 0})
 
     try:
-        heat_increments = iter(heat_increments)
+        increments = iter(increments)
     except TypeError:
-        heat_increments = itertools.repeat(heat_increments)
+        increments = itertools.repeat(increments)
 
-    for source in source_nodes:
+    for source in sources:
         visited_nodes = set()
         data_by_depth = itertools.islice(
-            zip(_edge_bfs_by_depth(T, [source]), heat_increments),
-            depth_limit)
-        for edges_at_depth, heat_increment in data_by_depth:
+            zip(_edge_bfs_by_depth(T, [source]), increments),
+            max_depth)
+        for edges_at_depth, increment in data_by_depth:
             for edge in edges_at_depth:
-                _update_edge_temperature(T, edge, heat_key, heat_increment)
-                _update_node_temperatures(T, edge[:2], heat_key, heat_increment,
+                _update_edge_temperature(T, edge, key, increment)
+                _update_node_temperatures(T, edge[:2], key, increment,
                                           visited_nodes)
     return T
 
@@ -99,11 +99,11 @@ def _group_by_sources(edges_iterator, initial_sources):
     yield current_group
 
 
-def _update_edge_temperature(G, edge, heat_key, heat_increment):
-    G.edges[edge][heat_key] += heat_increment
+def _update_edge_temperature(G, edge, key, increment):
+    G.edges[edge][key] += increment
 
 
-def _update_node_temperatures(G, nodes, heat_key, heat_increment, visited_nodes):
+def _update_node_temperatures(G, nodes, key, increment, visited_nodes):
     for node in set(nodes).difference(visited_nodes):
-        G.nodes[node][heat_key] += heat_increment
+        G.nodes[node][key] += increment
         visited_nodes.add(node)
