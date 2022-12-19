@@ -10,6 +10,7 @@ def temperature_graph(
     sources: Iterable,
     max_depth: Optional[int] = None,
     increments: Union[Iterable, float] = 1,
+    weight: Optional[str] = None,
     key: Optional[str] = 'heat'
 ) -> nx.Graph:
     """
@@ -27,7 +28,7 @@ def temperature_graph(
     Parameters
     ----------
     G : networkx.Graph
-        The graph from which to generate a heatmap.  A copy of the graph will be
+        The graph from which to generate a heatmap. A copy of the graph will be
         produced by default.
 
     sources : Iterable
@@ -37,12 +38,19 @@ def temperature_graph(
         The maximum number of edges away from a source node to update
         temperature values.  (Default: None)
 
-    increments : Union[Iterable, float]
+    increments : Union[str, Iterable, float]
+        The heat by
+
         A sequence whose `n`-th element gives, for each source node `s`, the
         amount to update the temperature of each node and edge that is `n`
-        breadth-first layers away from `s`.  A constant value may also be
+        breadth-first layers away from `s`. A constant value may also be
         provided to apply to all nodes and edges in the same connected component
         as each source node.  (Default: 1)
+
+    weight : str, optional
+        A node and edge attribute that should be used to multiplicatively
+        scale heat increments. Heat increments are not scaled by a weight
+        attribute by default.
 
     key : Optional[str]
         The name of the node and edge attribute where temperature values will be
@@ -57,6 +65,10 @@ def temperature_graph(
     T = type(G)()
     T.add_nodes_from(G.nodes(), **{key: 0})
     T.add_edges_from(G.edges(), **{key: 0})
+
+    if weight is not None:
+        nx.set_node_attributes(T, nx.get_node_attributes(G, weight), weight)
+        nx.set_edge_attributes(T, nx.get_edge_attributes(G, weight), weight)
 
     try:
         increments = iter(increments)
@@ -75,9 +87,10 @@ def temperature_graph(
         for edges_at_depth, (increment, next_increment) in data_by_depth:
             for edge in edges_at_depth:
                 _update_edge_temperature(T, edge, key, increment,
-                                         next_increment)
+                                         next_increment, weight)
                 _update_incident_node_temperatures(T, edge[:2], key, increment,
-                                                   next_increment, visited_nodes)
+                                                   next_increment, weight,
+                                                   visited_nodes)
     return T
 
 
@@ -110,14 +123,16 @@ def _consecutive_pairs(iterable):
     return itertools.zip_longest(first_items, second_items, fillvalue=0)
 
 
-def _update_edge_temperature(G, edge, key, increment, next_increment):
-    G.edges[edge][key] += increment
+def _update_edge_temperature(G, edge, key, increment, next_increment,
+                             weight):
+    G.edges[edge][key] += G.edges[edge].get(weight, 1) * increment
 
 
-def _update_incident_node_temperatures(G, nodes, key, increment, next_increment, visited_nodes):
+def _update_incident_node_temperatures(G, nodes, key, increment,
+                                       next_increment, weight, visited_nodes):
     source, target = nodes
     if source not in visited_nodes:
-        G.nodes[source][key] += increment
+        G.nodes[source][key] += G.nodes[source].get(weight, 1) * increment
     if target not in visited_nodes:
-        G.nodes[target][key] += next_increment
+        G.nodes[target][key] += G.nodes[target].get(weight, 1) * next_increment
     visited_nodes.update(nodes)

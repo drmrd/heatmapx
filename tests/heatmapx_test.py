@@ -165,6 +165,20 @@ class TestTemperatureGraph:
         for edge in set(graph_edges(temperature_graph)) - incident_edges:
             assert temperature_graph.edges[edge]['heat'] == 0
 
+    def test_heat_increments_can_be_weighted_by_a_graph_attribute(self):
+        single_edge_graph = nx.DiGraph([('A', 'B')])
+        single_edge_graph.nodes['A']['some_attribute'] = 2
+        single_edge_graph.edges['A', 'B']['some_attribute'] = 3
+        single_edge_graph.nodes['B']['some_attribute'] = 5
+
+        temperature_graph = hx.temperature_graph(
+            single_edge_graph, sources=['A'], increments=[1, 0.5],
+            weight='some_attribute'
+        )
+        assert temperature_graph.nodes['A']['heat'] == 1 * 2
+        assert temperature_graph.edges['A', 'B']['heat'] == 1 * 3
+        assert temperature_graph.nodes['B']['heat'] == 0.5 * 5
+
 
 def graph_edges(graph, nbunch=None, data=False):
     edges_kwargs = {'nbunch': nbunch, 'data': data}
