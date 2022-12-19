@@ -4,6 +4,7 @@ version = "0.2.0"
 description = "Flexible, intuitive heatmap creation on Network X graphs"
 authors = ["drmrd"]
 license = "BSD-3-Clause"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7"
