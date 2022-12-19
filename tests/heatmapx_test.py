@@ -121,26 +121,21 @@ class TestTemperatureGraph:
     def test_accepts_iterable_of_depth_specific_heat_increments(self, graph_class):
         square_graph = graph_class([(0, 1), (0, 2), (1, 3), (2, 3)])
 
-        heat_source = 0
-        temperature_graph = hx.temperature_graph(
+        hx.temperature_graph(
             square_graph,
-            sources=[heat_source],
-            increments=[1, 0.5]
+            sources=[0],
+            increments=[1, 0.5, 0.25]
         )
 
-        heat_source_and_neighbors = {heat_source}.union(
-            set(temperature_graph.neighbors(heat_source)))
-        incident_edges = set(graph_edges(temperature_graph, heat_source))
-
-        for neighbor in heat_source_and_neighbors:
-            assert temperature_graph.nodes[neighbor]['heat'] == 1
-        for edge in incident_edges:
-            assert temperature_graph.edges[edge]['heat'] == 1
-
-        for node in set(temperature_graph.nodes) - heat_source_and_neighbors:
-            assert temperature_graph.nodes[node]['heat'] == 0.5
-        for edge in set(graph_edges(temperature_graph)) - incident_edges:
-            assert temperature_graph.edges[edge]['heat'] == 0.5
+    @pytest.mark.parametrize('graph_class', [nx.Graph, nx.DiGraph])
+    def test_heat_increments_update_for_edge_targets(self, graph_class):
+        single_edge_graph = graph_class([('A', 'B')])
+        temperature_graph = hx.temperature_graph(
+            single_edge_graph, sources=['A'], increments=[1, 0.5]
+        )
+        assert temperature_graph.nodes['A']['heat'] == 1
+        assert temperature_graph.edges['A', 'B']['heat'] == 1
+        assert temperature_graph.nodes['B']['heat'] == 0.5
 
     @pytest.mark.parametrize(
         'graph_class',
@@ -153,7 +148,6 @@ class TestTemperatureGraph:
         temperature_graph = hx.temperature_graph(
             square_graph,
             sources=[heat_source],
-            increments=[1, 0.5],
             max_depth=1
         )
 
@@ -162,9 +156,9 @@ class TestTemperatureGraph:
         incident_edges = set(graph_edges(temperature_graph, heat_source))
 
         for neighbor in heat_source_and_neighbors:
-            assert temperature_graph.nodes[neighbor]['heat'] == 1
+            assert temperature_graph.nodes[neighbor]['heat'] > 0
         for edge in incident_edges:
-            assert temperature_graph.edges[edge]['heat'] == 1
+            assert temperature_graph.edges[edge]['heat'] > 0
 
         for node in set(temperature_graph.nodes) - heat_source_and_neighbors:
             assert temperature_graph.nodes[node]['heat'] == 0
