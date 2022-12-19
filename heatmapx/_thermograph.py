@@ -66,13 +66,18 @@ def temperature_graph(
     for source in sources:
         visited_nodes = set()
         data_by_depth = itertools.islice(
-            zip(_edge_bfs_by_depth(T, [source]), increments),
-            max_depth)
-        for edges_at_depth, increment in data_by_depth:
+            zip(
+                _edge_bfs_by_depth(T, [source]),
+                _consecutive_pairs(increments)
+            ),
+            max_depth
+        )
+        for edges_at_depth, (increment, next_increment) in data_by_depth:
             for edge in edges_at_depth:
-                _update_edge_temperature(T, edge, key, increment)
-                _update_node_temperatures(T, edge[:2], key, increment,
-                                          visited_nodes)
+                _update_edge_temperature(T, edge, key, increment,
+                                         next_increment)
+                _update_incident_node_temperatures(T, edge[:2], key, increment,
+                                                   next_increment, visited_nodes)
     return T
 
 
@@ -99,11 +104,20 @@ def _group_by_sources(edges_iterator, initial_sources):
     yield current_group
 
 
-def _update_edge_temperature(G, edge, key, increment):
+def _consecutive_pairs(iterable):
+    first_items, second_items = itertools.tee(iterable)
+    next(second_items, None)
+    return itertools.zip_longest(first_items, second_items, fillvalue=0)
+
+
+def _update_edge_temperature(G, edge, key, increment, next_increment):
     G.edges[edge][key] += increment
 
 
-def _update_node_temperatures(G, nodes, key, increment, visited_nodes):
-    for node in set(nodes).difference(visited_nodes):
-        G.nodes[node][key] += increment
-        visited_nodes.add(node)
+def _update_incident_node_temperatures(G, nodes, key, increment, next_increment, visited_nodes):
+    source, target = nodes
+    if source not in visited_nodes:
+        G.nodes[source][key] += increment
+    if target not in visited_nodes:
+        G.nodes[target][key] += next_increment
+    visited_nodes.update(nodes)
