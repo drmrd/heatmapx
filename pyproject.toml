@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "heatmapx"
-version = "0.2.0"
+version = "0.2.1"
 description = "Flexible, intuitive heatmap creation on Network X graphs"
 authors = ["drmrd"]
 license = "BSD-3-Clause"
