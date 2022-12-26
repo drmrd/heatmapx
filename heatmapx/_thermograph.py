@@ -39,13 +39,11 @@ def temperature_graph(
         temperature values.  (Default: None)
 
     increments : Union[str, Iterable, float]
-        The heat by
-
-        A sequence whose `n`-th element gives, for each source node `s`, the
-        amount to update the temperature of each node and edge that is `n`
-        breadth-first layers away from `s`. A constant value may also be
-        provided to apply to all nodes and edges in the same connected component
-        as each source node.  (Default: 1)
+        A sequence whose `n`-th element gives, for each source node `s`,
+        the amount to update the temperature of each node and edge that is
+        `n` breadth-first layers away from `s`. A constant value may also
+        be provided to apply to all nodes and edges in the same connected
+        component as each source node. (Default: 1)
 
     weight : str, optional
         A node and edge attribute that should be used to multiplicatively
