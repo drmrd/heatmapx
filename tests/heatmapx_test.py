@@ -1,3 +1,5 @@
+import itertools
+
 import networkx as nx
 import pytest
 
@@ -131,6 +133,32 @@ def test_accepts_iterable_of_depth_specific_heat_increments(graph_class):
         sources=[0],
         increments=[1, 0.5, 0.25]
     )
+
+
+def test_the_last_increment_in_an_iterable_is_repeated_indefinitely():
+    long_path = nx.path_graph(1000)
+    increments = [10, 5, 2.5, 1.25]
+    temperature_graph = hx.temperature_graph(
+        long_path,
+        sources=[0],
+        increments=iter(increments)
+    )
+    for node, expected_increment in itertools.zip_longest(
+            temperature_graph, increments, fillvalue=increments[-1]
+    ):
+        node_temperature = temperature_graph.nodes[node]['heat']
+        assert node_temperature == expected_increment, (
+            f'Node {node} had temperature {node_temperature} (expected '
+            f'{expected_increment}).'
+        )
+    for (*edge, edge_temperature), expected_increment in itertools.zip_longest(
+            temperature_graph.edges(data='heat'),
+            increments, fillvalue=increments[-1]
+    ):
+        assert edge_temperature == expected_increment, (
+            f'Edge {edge} had temperature {edge_temperature} '
+            f'(expected {expected_increment}).'
+        )
 
 
 @pytest.mark.parametrize('graph_class', [nx.Graph, nx.DiGraph])

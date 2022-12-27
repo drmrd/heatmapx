@@ -39,12 +39,17 @@ def temperature_graph(
         temperatures.) If left unspecified, all nodes and edges reachable
         from a source node will be updated.
 
-    increments : str, iterable, or float, default 1
+    increments : iterable or float, default 1
         A sequence whose `n`-th element gives, for each source node `s`,
         the amount to update the temperature of each node and edge that is
         `n` breadth-first layers away from `s`. A constant value may also
         be provided to apply to all nodes and edges in the same connected
         component as each source node.
+
+        If the provided iterable is exhausted before `temperature_graph`
+        finishes calculating temperatures for graph elements, the final
+        increment in the iterable will be used for the remainder of the
+        graph.
 
     weight : str, optional
         A node and edge attribute that should be used to multiplicatively
@@ -73,6 +78,7 @@ def temperature_graph(
         increments = iter(increments)
     except TypeError:
         increments = itertools.repeat(increments)
+    increments = _repeat_last(increments)
 
     for source in sources:
         visited_nodes = set()
@@ -155,3 +161,9 @@ def _update_temperatures_of_unreachable_constituents(T, sources, key):
         edges_iterator_kwargs['keys'] = True
     for edge in T.edges(unreachable_nodes, **edges_iterator_kwargs):
         T.edges[edge][key] = coldest_temperature
+
+
+def _repeat_last(iterable: Iterable):
+    for item in iterable:
+        yield item
+    yield from itertools.repeat(item)
