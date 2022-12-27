@@ -100,19 +100,11 @@ class TestTemperatureGraph:
             assert temperature_graph.edges[edge]['heat'] == 2
 
     def test_heat_distribution_respects_edge_directedness(self):
-        square_graph = nx.DiGraph([(0, 1), (0, 2), (1, 3), (2, 3)])
-        temperature_graph = hx.temperature_graph(square_graph, [1, 2])
-
-        assert temperature_graph.nodes[0]['heat'] == 0
-        assert temperature_graph.edges[0, 1]['heat'] == 0
-        assert temperature_graph.edges[0, 2]['heat'] == 0
-
+        square_graph = nx.DiGraph([(0, 1), (1, 2), (2, 0)])
+        temperature_graph = hx.temperature_graph(square_graph, [0],
+                                                 increments=range(3))
         assert temperature_graph.nodes[1]['heat'] == 1
-        assert temperature_graph.nodes[2]['heat'] == 1
-        assert temperature_graph.edges[1, 3]['heat'] == 1
-        assert temperature_graph.edges[2, 3]['heat'] == 1
-
-        assert temperature_graph.nodes[3]['heat'] == 2
+        assert temperature_graph.nodes[2]['heat'] == 2
 
     @pytest.mark.parametrize(
         'graph_class',
@@ -178,6 +170,26 @@ class TestTemperatureGraph:
         assert temperature_graph.nodes['A']['heat'] == 1 * 2
         assert temperature_graph.edges['A', 'B']['heat'] == 1 * 3
         assert temperature_graph.nodes['B']['heat'] == 0.5 * 5
+
+    def test_unreachable_nodes_and_edges_are_assigned_minimum_temperature_value(self):
+        G = nx.path_graph(5, create_using=nx.DiGraph)
+        G.add_edge(2, 4)
+
+        source = 2
+        unreachable_nodes = [0, 1]
+        unreachable_edges = [(0, 1), (1, 2)]
+
+        H = hx.temperature_graph(G, [source])
+        coldest_temperature = max(
+            max(heat for *_, heat in H.edges.data('heat')),
+            max(heat for _, heat in H.nodes.data('heat'))
+        )
+        assert coldest_temperature == 1
+
+        for unreachable_node in unreachable_nodes:
+            assert H.nodes[unreachable_node]['heat'] == coldest_temperature
+        for unreachable_edge in unreachable_edges:
+            assert H.edges[unreachable_edge]['heat'] == coldest_temperature
 
 
 def graph_edges(graph, nbunch=None, data=False):
