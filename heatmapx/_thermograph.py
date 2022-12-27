@@ -1,5 +1,4 @@
 import itertools
-
 from typing import Iterable, Optional, Union
 
 import networkx as nx
@@ -140,33 +139,19 @@ def _update_incident_node_temperatures(G, nodes, key, increment,
 
 
 def _update_temperatures_of_unreachable_constituents(T, sources, key):
-    disconnected_nodes = _disconnected_nodes(T, sources)
     unreachable_nodes = set(T) - set(sources) - set().union(*(
         nx.descendants(T, source) for source in sources
-    )) - disconnected_nodes
-
+    ))
     coldest_temperature = max(
         max((heat for *_, heat in T.edges.data(key)), default=0),
         max((heat for _, heat in T.nodes.data(key)), default=0)
     )
+
+    for unreachable_node in unreachable_nodes:
+        T.nodes[unreachable_node][key] = coldest_temperature
+
     edges_iterator_kwargs = {}
     if isinstance(T, nx.MultiGraph):
         edges_iterator_kwargs['keys'] = True
-    for unreachable_node in unreachable_nodes:
-        T.nodes[unreachable_node][key] = coldest_temperature
-        for edge in T.edges(unreachable_nodes, **edges_iterator_kwargs):
-            T.edges[edge][key] = coldest_temperature
-
-
-def _disconnected_nodes(G, sources):
-    """
-    The nodes in `G` outside the connected components containing `sources`.
-    """
-    G_undirected = nx.to_undirected(G)
-    return set(
-        itertools.chain.from_iterable(
-            component_nodes
-            for component_nodes in nx.connected_components(G_undirected)
-            if not any(source in component_nodes for source in sources)
-        )
-    )
+    for edge in T.edges(unreachable_nodes, **edges_iterator_kwargs):
+        T.edges[edge][key] = coldest_temperature

@@ -78,17 +78,21 @@ class TestTemperatureGraph:
         'graph_class',
         [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
     )
-    def test_heat_data_is_only_updated_in_connected_components_of_source_nodes(self, graph_class):
-        graph: nx.Graph = graph_class([(0, 1), (1, 2), (2, 0),
-                                       (3, 4), (4, 5), (5, 3)])
-        graph.add_nodes_from([6, 7, 8])
+    def test_components_disconnected_from_sources_are_assigned_coldest_temperature(self, graph_class):
+        graph: nx.Graph = graph_class([(0, 1), (1, 2), (3, 4)])
 
-        temperature_graph = hx.temperature_graph(graph, [0])
+        temperature_graph = hx.temperature_graph(graph, [0], increments=range(1, 4))
 
-        for node in range(3):
-            assert temperature_graph.nodes[node]['heat'] == 1
-        for node in range(3, 9):
-            assert temperature_graph.nodes[node]['heat'] == 0
+        source_connected_component_max_temperature = max(
+            *(heat for node, heat in temperature_graph.nodes(data='heat') if node <= 2),
+            *(heat for *_, heat in temperature_graph.edges({0, 1, 2}, data='heat'))
+        )
+
+        assert {
+            temperature_graph.nodes[3]['heat'],
+            temperature_graph.nodes[4]['heat'],
+            temperature_graph.get_edge_data(3, 4, 0)['heat']
+        } == {source_connected_component_max_temperature}
 
     def test_heat_from_multiple_sources_accumulates_additively(self):
         square_graph = nx.Graph([(0, 1), (0, 2), (1, 3), (2, 3)])
