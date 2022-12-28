@@ -1,5 +1,5 @@
 import itertools
-from typing import Iterable, Optional, Union
+from typing import Iterable, Iterator, Optional, Union
 
 import networkx as nx
 
@@ -8,7 +8,7 @@ def temperature_graph(
     G: nx.Graph,
     sources: Iterable,
     max_depth: Optional[int] = None,
-    increments: Union[Iterable, float] = 1,
+    increments: Union[Iterable[Union[int, float]], int, float] = 1.0,
     weight: Optional[str] = None,
     key: Optional[str] = 'heat'
 ) -> nx.Graph:
@@ -39,7 +39,7 @@ def temperature_graph(
         temperatures.) If left unspecified, all nodes and edges reachable
         from a source node will be updated.
 
-    increments : iterable or float, default 1
+    increments : iterable of float or float, default 1.0
         A sequence whose `n`-th element gives, for each source node `s`,
         the amount to update the temperature of each node and edge that is
         `n` breadth-first layers away from `s`. A constant value may also
@@ -75,10 +75,13 @@ def temperature_graph(
         nx.set_edge_attributes(T, nx.get_edge_attributes(G, weight), weight)
 
     try:
-        increments = iter(increments)
+        increments, increments_tester = itertools.tee(increments)
+        _validate_iterator_is_nonempty(increments_tester)
+        increments = _repeat_last(increments)
     except TypeError:
         increments = itertools.repeat(increments)
-    increments = _repeat_last(increments)
+    except ValueError:
+        raise ValueError('Provided increments iterable must be nonempty.')
 
     for source in sources:
         visited_nodes = set()
@@ -161,6 +164,13 @@ def _update_temperatures_of_unreachable_constituents(T, sources, key):
         edges_iterator_kwargs['keys'] = True
     for edge in T.edges(unreachable_nodes, **edges_iterator_kwargs):
         T.edges[edge][key] = coldest_temperature
+
+
+def _validate_iterator_is_nonempty(iterator: Iterator):
+    empty_iterator_flag = object()
+    item = next(iterator, empty_iterator_flag)
+    if item is empty_iterator_flag:
+        raise ValueError('Provided iterator must be nonempty.')
 
 
 def _repeat_last(iterable: Iterable):
