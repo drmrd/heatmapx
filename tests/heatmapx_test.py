@@ -161,6 +161,15 @@ def test_the_last_increment_in_an_iterable_is_repeated_indefinitely():
         )
 
 
+def test_providing_an_empty_increments_iterable_results_in_an_informative_error():
+    with pytest.raises(ValueError, match='increments iterable must be nonempty'):
+        hx.temperature_graph(
+            nx.Graph([(0, 1)]),
+            sources=[0],
+            increments=iter(())
+        )
+
+
 @pytest.mark.parametrize('graph_class', [nx.Graph, nx.DiGraph])
 def test_heat_increments_update_for_edge_targets(graph_class):
     single_edge_graph = graph_class([('A', 'B')])
