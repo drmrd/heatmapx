@@ -99,7 +99,7 @@ def temperature_graph(
                 _update_incident_node_temperatures(T, edge[:2], key, increment,
                                                    next_increment, weight,
                                                    visited_nodes)
-    _update_temperatures_of_unreachable_constituents(T, sources, key)
+    _update_temperatures_of_unreachable_nodes_and_edges(T, sources, key)
     return T
 
 
@@ -147,7 +147,7 @@ def _update_incident_node_temperatures(G, nodes, key, increment,
     visited_nodes.update(nodes)
 
 
-def _update_temperatures_of_unreachable_constituents(T, sources, key):
+def _update_temperatures_of_unreachable_nodes_and_edges(T, sources, key):
     unreachable_nodes = set(T) - set(sources) - set().union(*(
         nx.descendants(T, source) for source in sources
     ))
