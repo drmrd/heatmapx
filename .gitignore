@@ -1,4 +1,6 @@
+.python-version
 **/__pycache__
+**/cache
 **/.ipynb_checkpoints
 **/.pytest_cache
 /.mypy_cache/3.8/
@@ -7,3 +9,5 @@
 /.dir-locals.el
 .tox
 /heatmapx.egg-info/
+
+**/.DS_Store
