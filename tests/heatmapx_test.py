@@ -15,7 +15,7 @@ def test_given_a_graph_and_source_nodes_returns_a_new_graph():
 
 @pytest.mark.parametrize(
     'input_class',
-    [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    [nx.Graph, nx.DiGraph, nx.MultiDiGraph]
 )
 def test_output_type_matches_its_input(input_class):
     G = input_class()
@@ -51,7 +51,7 @@ def test_the_default_heat_key_is_heat():
 
 @pytest.mark.parametrize(
     'graph_class',
-    [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    [nx.Graph, nx.DiGraph, nx.MultiDiGraph]
 )
 def test_heat_data_is_updated_throughout_graph(graph_class):
     graph = nx.complete_graph(7, create_using=graph_class)
@@ -65,7 +65,7 @@ def test_heat_data_is_updated_throughout_graph(graph_class):
 
 @pytest.mark.parametrize(
     'graph_class',
-    [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    [nx.Graph, nx.DiGraph, nx.MultiDiGraph]
 )
 @pytest.mark.parametrize(
     'node_labels',
@@ -84,7 +84,7 @@ def test_supports_common_graph_and_node_label_types(graph_class, node_labels):
 
 @pytest.mark.parametrize(
     'graph_class',
-    [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    [nx.Graph, nx.DiGraph, nx.MultiDiGraph]
 )
 def test_components_disconnected_from_sources_are_assigned_coldest_heat(graph_class):
     graph: nx.Graph = graph_class([(0, 1), (1, 2), (3, 4)])
@@ -123,7 +123,7 @@ def test_heat_distribution_respects_edge_directedness():
 
 @pytest.mark.parametrize(
     'graph_class',
-    [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    [nx.Graph, nx.DiGraph, nx.MultiDiGraph]
 )
 def test_accepts_iterable_of_depth_specific_heat_increments(graph_class):
     square_graph = graph_class([(0, 1), (0, 2), (1, 3), (2, 3)])
@@ -183,7 +183,7 @@ def test_heat_increments_update_for_edge_targets(graph_class):
 
 @pytest.mark.parametrize(
     'graph_class',
-    [nx.Graph, nx.DiGraph, nx.MultiDiGraph, nx.OrderedDiGraph]
+    [nx.Graph, nx.DiGraph, nx.MultiDiGraph]
 )
 def test_can_limit_distance_heat_spreads_from_heat_sources(graph_class):
     square_graph = graph_class([(0, 1), (0, 2), (1, 3), (2, 3)])
