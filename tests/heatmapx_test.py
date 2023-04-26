@@ -137,6 +137,10 @@ class TestHeatGraphWithIncrements:
         for edge in graph.edges:
             assert heat_graph.edges[edge]['heat'] == 1
 
+    def test_a_single_source_can_be_provided_rather_than_an_iterable(self):
+        G = nx.Graph([(0, 1), (1, 2), (2, 0)])
+        hx.heat_graph_with_increments(G, 0)
+
     @pytest.mark.parametrize(
         'graph_class',
         [nx.Graph, nx.DiGraph, nx.MultiDiGraph]

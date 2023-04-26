@@ -1,16 +1,16 @@
 import itertools
-from typing import Iterable, Optional, Union, Iterator
+from typing import Hashable, Iterable, Iterator, Optional, Union
 
 import networkx as nx
 
 
 def heat_graph_with_increments(
     G: nx.Graph,
-    sources: Iterable,
     max_depth: Optional[int] = None,
     increments: Union[Iterable[Union[int, float]], int, float] = 1.0,
     weight: Optional[str] = None,
     key: Optional[str] = 'heat'
+    sources: Iterable[Hashable] | Hashable,
 ) -> nx.Graph:
     """
     Calculate heat radiating from source nodes in a graph.
@@ -29,7 +29,7 @@ def heat_graph_with_increments(
     G : networkx.Graph
         The graph from which to generate a heatmap.
 
-    sources : iterable
+    sources : iterable of hashable or hashable
         The nodes serving as heat sources in `G`.
 
     max_depth : int, optional
@@ -73,6 +73,12 @@ def heat_graph_with_increments(
     if weight is not None:
         nx.set_node_attributes(T, nx.get_node_attributes(G, weight), weight)
         nx.set_edge_attributes(T, nx.get_edge_attributes(G, weight), weight)
+
+    try:
+        sources, sources_tester = itertools.tee(sources)
+        sources = list(sources)
+    except TypeError:
+        sources = [sources]
 
     try:
         increments, increments_tester = itertools.tee(increments)
