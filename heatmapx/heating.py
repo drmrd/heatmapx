@@ -3,25 +3,27 @@ import numpy as np
 import scipy.linalg
 
 
-def heat_graph(G: nx.Graph, source, time) -> nx.Graph:
+def heat_graph(G: nx.Graph, sources, time) -> nx.Graph:
     G_directed = G.to_directed()
-    A = nx.adjacency_matrix(G_directed, weight=None).todense().transpose()
-    D = np.diag(np.asarray(A.sum(axis=0))[0])
+    A = nx.to_scipy_sparse_array(G_directed, weight=None)
+    D = np.diag(np.asarray(A.sum(axis=1)))
 
     D_out_inv = 1 / D
     D_out_inv[D_out_inv == np.inf] = 0
 
     L = D - A
-    L_out = L @ D_out_inv
+    L_out = D_out_inv @ L
 
-    source_encoded = np.array([
-        1 if node == source else 0
-        for node in G_directed.nodes
-    ])
+    sources_indicator = scipy.sparse.csr_matrix(
+        np.isin(
+            G_directed.nodes,
+            list(sources)
+        )
+    )
 
-    heat_coefficients = scipy.linalg.expm(
+    heat_coefficients = sources_indicator @ scipy.linalg.expm(
         -time * L_out
-    ) @ source_encoded
+    )
 
     nx.set_node_attributes(
         G_directed,

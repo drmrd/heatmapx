@@ -44,7 +44,7 @@ class TestHeatGraph:
             20: 0.01, 21: 0.01, 22: 0.01, 23: 0.01, 24: 0.01
         }
         example_heated_source_0_time_1 = hx.heat_graph(
-            digraphwave_example, source=0, time=1
+            digraphwave_example, sources={0}, time=1
         )
 
         assert np.allclose(
