@@ -6,13 +6,13 @@ import scipy.linalg
 def heat_graph(G: nx.Graph, source, time) -> nx.Graph:
     G_directed = G.to_directed()
     A = nx.adjacency_matrix(G_directed, weight=None).todense().transpose()
-    D = np.diag([out_degree for _, out_degree in G_directed.out_degree])
+    D = np.diag(np.asarray(A.sum(axis=0))[0])
 
-    D_inv_breve = 1 / D
-    D_inv_breve[D_inv_breve == np.inf] = 0
+    D_out_inv = 1 / D
+    D_out_inv[D_out_inv == np.inf] = 0
 
     L = D - A
-    laplacian = L @ D_inv_breve
+    L_out = L @ D_out_inv
 
     source_encoded = np.array([
         1 if node == source else 0
@@ -20,7 +20,7 @@ def heat_graph(G: nx.Graph, source, time) -> nx.Graph:
     ])
 
     heat_coefficients = scipy.linalg.expm(
-        -time * laplacian
+        -time * L_out
     ) @ source_encoded
 
     nx.set_node_attributes(
