@@ -1,28 +1,28 @@
 import itertools
-from typing import Hashable, Iterable, Iterator, Optional, Union
+from typing import Hashable, Iterable, Iterator
 
 import networkx as nx
 
 
 def heat_graph_with_increments(
     G: nx.Graph,
-    max_depth: Optional[int] = None,
-    increments: Union[Iterable[Union[int, float]], int, float] = 1.0,
-    weight: Optional[str] = None,
-    key: Optional[str] = 'heat'
     sources: Iterable[Hashable] | Hashable,
+    max_depth: int | None = None,
+    increments: Iterable[int | float] | int | float = 1.0,
+    weight: str | None = None,
+    key: str | None = 'heat'
 ) -> nx.Graph:
     """
     Calculate heat radiating from source nodes in a graph.
 
     Heat values are initially set to 0 and then updated throughout `G`
     in a breadth-first manner beginning at each node in `sources`. For
-    each source node `s`, the heat of each edge `e` and its
-    incident nodes in `G` are updated according to `increments` and how
-    many edges away they are from the source node `s`. This process is
-    repeated for every source node, with heat values from multiple source
-    nodes contributing additively to the overall heat of the nodes
-    and edges in the graph.
+    each source node `s`, the heat of each edge `e` and its incident
+    nodes in `G` are updated according to `increments` and how many
+    edges away they are from the source node `s`. This process is
+    repeated for every source node, with heat values from multiple
+    source nodes contributing additively to the overall heat of the
+    nodes and edges in the graph.
 
     Parameters
     ----------
@@ -42,9 +42,9 @@ def heat_graph_with_increments(
     increments : iterable of float or float, default 1.0
         A sequence whose `n`-th element gives, for each source node `s`,
         the amount to update the heat of each node and edge that is
-        `n` breadth-first layers away from `s`. A constant value may also
-        be provided to apply to all nodes and edges in the same connected
-        component as each source node.
+        `n` breadth-first layers away from `s`. A constant value may
+        also be provided to apply to all nodes and edges in the same
+        connected component as each source node.
 
         If the provided iterable is exhausted before `heat_graph`
         finishes calculating heat values for graph elements, the final
@@ -52,19 +52,19 @@ def heat_graph_with_increments(
         graph.
 
     weight : str, optional
-        A node and edge attribute that should be used to multiplicatively
-        scale heat increments. Heat increments are not scaled by a weight
-        attribute by default.
+        A node and edge attribute that should be used to
+        multiplicatively scale heat increments. Heat increments are not
+        scaled by a weight attribute by default.
 
     key : str, default 'heat'
-        The name of the node and edge attribute where heat values
-        will be stored in `T`.
+        The name of the node and edge attribute where heat values will
+        be stored in `T`.
 
     Returns
     -------
-    networkx.Graph
-        A deep copy of `G` with a heat assigned to the `key`
-        attribute of each node and edge.
+    T : networkx.Graph
+        A deep copy of `G` with a heat assigned to the `key` attribute
+        of each node and edge.
     """
     T = type(G)()
     T.add_nodes_from(G.nodes(), **{key: 0})
