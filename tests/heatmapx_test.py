@@ -1,12 +1,67 @@
 import itertools
 
 import networkx as nx
+import numpy as np
 import pytest
 
 import heatmapx as hx
 
 
-class TestGeneralHeaterBehavior:
+class TestHeatGraph:
+    def test_propagates_heat_from_sources_following_diffusion_equation(self):
+        # Example from §3.1 of
+        #     Ceylan, C., Ghoorchian, K., & Kragic, D. (2022). Digraphwave:
+        #     Scalable Extraction of Structural Node Embeddings via Diffusion
+        #     on Directed Graphs. arXiv preprint arXiv:2207.10149.
+        digraphwave_example = nx.DiGraph([
+            (0, 1), (0, 7), (0, 13), (0, 19),
+            (1, 0), (7, 0), (13, 0), (19, 0),
+
+            (2, 1), (3, 1), (4, 1), (5, 1), (6, 1),
+
+            (7, 8), (7, 9), (7, 10), (7, 11), (7, 12),
+
+            (14, 13), (15, 13), (16, 13), (17, 13), (18, 13),
+            (14, 15), (15, 16), (16, 17), (17, 18), (18, 14),
+
+            (19, 20), (19, 21), (19, 22), (19, 23), (19, 24),
+            (20, 21), (21, 22), (22, 23), (23, 24), (24, 20)
+        ])
+
+        expected_heat_source_0_time_1 = {
+            0: 0.48,
+
+            1: 0.10,
+            2: 0, 3: 0, 4: 0, 5: 0, 6: 0,
+
+            7: 0.10,
+            8: 0.01, 9: 0.01, 10: 0.01, 11: 0.01, 12: 0.01,
+
+            13: 0.10,
+            14: 0, 15: 0, 16: 0, 17: 0, 18: 0,
+
+            19: 0.10,
+            20: 0.01, 21: 0.01, 22: 0.01, 23: 0.01, 24: 0.01
+        }
+        example_heated_source_0_time_1 = hx.heat_graph(
+            digraphwave_example, source=0, time=1
+        )
+
+        assert np.allclose(
+            list(
+                nx.get_node_attributes(
+                    example_heated_source_0_time_1, 'heat'
+                ).values()
+            ),
+            [
+                expected_heat_source_0_time_1[node]
+                for node in digraphwave_example.nodes
+            ],
+            atol=1e-2
+        )
+
+
+class TestHeatGraphWithIncrements:
     def test_given_a_graph_and_source_nodes_returns_a_new_graph(self):
         G = nx.Graph()
         G_heated = hx.heat_graph_with_increments(G, sources=[])
@@ -47,8 +102,6 @@ class TestGeneralHeaterBehavior:
         )
         assert 'heat' in cyclic_heat_graph.nodes[0]
 
-
-class TestHeatGraphWithIncrements:
     @pytest.mark.parametrize(
         'graph_class',
         [nx.Graph, nx.DiGraph, nx.MultiDiGraph]
