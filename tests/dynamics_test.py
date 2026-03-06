@@ -74,3 +74,14 @@ def test_base_preserves_edge_weights(directed_triangle):
 def test_node_order_contains_all_nodes(undirected_triangle):
     dynamic = make_concrete_base(undirected_triangle)
     assert set(dynamic.node_order) == set(undirected_triangle.nodes())
+
+
+def test_node_order_is_deterministic_on_repetition(undirected_triangle):
+    dynamic = make_concrete_base(undirected_triangle)
+    assert dynamic.node_order == dynamic.node_order
+
+
+def test_node_order_is_deterministic_across_instances(undirected_triangle):
+    instance1_node_order = make_concrete_base(undirected_triangle).node_order
+    instance2_node_order = make_concrete_base(undirected_triangle).node_order
+    assert instance1_node_order == instance2_node_order
