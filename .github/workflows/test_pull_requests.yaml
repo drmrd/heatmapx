@@ -8,28 +8,29 @@ on:
 jobs:
   run_test_suite:
     name: Test HeatmapX
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 2
       matrix:
         python-version:
-          - '3.9'
           - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install Poetry
-        run: pipx install poetry==1.3.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'poetry'
 
       - name: Install dependencies
-        run: poetry install --with test
+        run: uv sync --group test
 
       - name: Test with pytest
-        run: poetry run python -m pytest
+        run: uv run python -m pytest
