@@ -69,3 +69,8 @@ def test_base_preserves_edge_weights(directed_triangle):
 
     for u, v, data in directed_triangle.edges(data=True):
         assert dynamic.graph.edges[u, v, 0]['weight'] == data['weight']
+
+
+def test_node_order_contains_all_nodes(undirected_triangle):
+    dynamic = make_concrete_base(undirected_triangle)
+    assert set(dynamic.node_order) == set(undirected_triangle.nodes())
