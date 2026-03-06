@@ -1,46 +1,35 @@
-[tool.poetry]
+[project]
 name = "heatmapx"
-# A placeholder version. The actual version is managed by the
-# poetry-dynamic-versioning Poetry plugin.
-version = "0.0.0"
+dynamic = ["version"]
 description = "Flexible, intuitive heatmap creation on NetworkX graphs"
-authors = ["drmrd"]
-license = "BSD-3-Clause"
+authors = [
+    { name = "drmrd" }
+]
+license = { text = "BSD-3-Clause" }
 readme = "README.md"
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "networkx>=2.8.0,<3.0.0",
+]
 
-
-[tool.poetry.dependencies]
-python = "^3.10"
-networkx = "^2.8.0"
-
-[tool.poetry.group.test]
-optional = true
-
-[tool.poetry.group.test.dependencies]
-pytest = "^6.2.5"
-
-
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-gitpython = "^3.1.29"
-
-ipython = "^8.10.0"
-jupyterlab = "^4.4.8"
-
-geocoder = "^1.38.1"
-matplotlib = "^3.1.0"
-osmnx = "^1.8.1"
-scikit-learn = "^1.5.0"
-geopandas = "^1.1.2"
-
-
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-
+[dependency-groups]
+test = [
+    "pytest>=8.0.0",
+]
+dev = [
+    "geocoder>=1.38.1,<2.0.0",
+    "geopandas>=1.1.2,<2.0.0",
+    "gitpython>=3.1.29,<4.0.0",
+    "ipython>=8.10.0,<9.0.0",
+    "jupyterlab>=4.4.8,<5.0.0",
+    "matplotlib>=3.1.0,<4.0.0",
+    "osmnx>=1.8.1,<2.0.0",
+    "scikit-learn>=1.5.0,<2.0.0",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
