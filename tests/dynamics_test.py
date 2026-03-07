@@ -167,3 +167,8 @@ def test_to_graph_node_values_match_state_vector(directed_triangle):
 def test_markov_chain_satisfies_protocol(undirected_triangle):
     dynamic = MarkovChainDynamic(undirected_triangle)
     assert isinstance(dynamic, FlowDynamic)
+
+
+def test_markov_chain_dynamic_accepts_departure_rate_parameter(undirected_triangle):
+    dynamic = MarkovChainDynamic(undirected_triangle, departure_rate=0.85)
+    assert dynamic.departure_rate == 0.85
