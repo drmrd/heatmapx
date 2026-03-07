@@ -143,3 +143,12 @@ def test_to_graph_returns_a_new_graph_with_heat_attribute(directed_triangle):
         assert node_heat is not None, (
             f'Missing "heat" attribute on node {node}.'
         )
+
+
+def test_to_graph_supports_a_custom_heat_key(directed_triangle):
+    dynamic = make_concrete_base(directed_triangle)
+    state = dynamic.initial_state([0])
+
+    heated_graph = dynamic.to_graph(state, key='temperature')
+    for node, heat in heated_graph.nodes(data='temperature'):
+        assert heat is not None, f'Node {node} has no custom heat attribute.'

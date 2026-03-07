@@ -21,11 +21,11 @@ class FlowDynamicBase:
             for node in self.node_order
         ])
 
-    def to_graph(self, state: npt.NDArray) -> nx.MultiDiGraph:
+    def to_graph(self, state: npt.NDArray, key: str = 'heat') -> nx.MultiDiGraph:
         heated_graph = nx.MultiDiGraph(self._graph)
         nx.set_node_attributes(
             heated_graph,
             dict(zip(self.node_order, state)),
-            name='heat'
+            name=key
         )
         return heated_graph
