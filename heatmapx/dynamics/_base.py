@@ -20,3 +20,12 @@ class FlowDynamicBase:
             initial if node in sources else 0.0
             for node in self.node_order
         ])
+
+    def to_graph(self, state: npt.NDArray) -> nx.MultiDiGraph:
+        heated_graph = nx.MultiDiGraph(self._graph)
+        nx.set_node_attributes(
+            heated_graph,
+            dict(zip(self.node_order, state)),
+            name='heat'
+        )
+        return heated_graph

@@ -128,3 +128,18 @@ def test_initial_state_returns_numpy_array(undirected_triangle):
     assert state.dtype == np.floating or np.issubdtype(
         state.dtype, np.floating
     )
+
+
+def test_to_graph_returns_a_new_graph_with_heat_attribute(directed_triangle):
+    dynamic = make_concrete_base(directed_triangle)
+    state = dynamic.initial_state([0])
+
+    heated_graph = dynamic.to_graph(state)
+
+    assert isinstance(heated_graph, nx.MultiDiGraph)
+    assert heated_graph is not directed_triangle
+    assert heated_graph is not dynamic.graph
+    for node, node_heat in heated_graph.nodes(data='heat'):
+        assert node_heat is not None, (
+            f'Missing "heat" attribute on node {node}.'
+        )
