@@ -1,3 +1,6 @@
+import hypothesis as hyp
+import hypothesis.strategies as st
+import hypothesis_networkx as hyp_nx
 import networkx as nx
 import numpy as np
 import pytest
@@ -13,6 +16,24 @@ def undirected_triangle():
 @pytest.fixture
 def directed_triangle():
     return nx.cycle_graph(3, create_using=nx.DiGraph)
+
+
+def random_digraph(min_nodes=2, max_nodes=20, weakly_connected=False):
+    weights = st.floats(allow_nan=False, allow_infinity=False)
+    node_data = st.fixed_dictionaries({
+        'name': st.text(), 'number': st.integers(), 'weight': weights
+    })
+    edge_data = st.fixed_dictionaries({'weight': weights})
+
+    return hyp_nx.graph_builder(
+        graph_type=nx.DiGraph,
+        node_keys=st.integers(),
+        node_data=node_data,
+        edge_data=edge_data,
+        min_nodes=min_nodes,
+        max_nodes=max_nodes,
+        connected=weakly_connected
+    )
 
 
 def make_concrete_base(G, **kwargs):
@@ -172,3 +193,27 @@ def test_markov_chain_satisfies_protocol(undirected_triangle):
 def test_markov_chain_dynamic_accepts_departure_rate_parameter(undirected_triangle):
     dynamic = MarkovChainDynamic(undirected_triangle, departure_rate=0.85)
     assert dynamic.departure_rate == 0.85
+
+
+@hyp.given(G=random_digraph())
+def test_markov_transition_matrix_columns_sum_to_one(G):
+    departure_rate = 867.5309
+    dynamic = MarkovChainDynamic(G, departure_rate=departure_rate)
+    P = dynamic.transition_matrix
+
+    col_sums = np.asarray(P.sum(axis=0)).flatten()
+    for i, node in enumerate(dynamic.node_order):
+        if G.out_degree(node) > 0 or G.in_degree(node) > 0:
+            assert col_sums[i] == pytest.approx(1.0, abs=1e-12), (
+                f'Column for node {node} sums to {col_sums[i]}, expected '
+                f'{departure_rate}.'
+            )
+
+
+def test_transition_matrix_sink_node_is_absorbing():
+    G = nx.DiGraph([(0, 1), (0, 2), (1, 3), (2, 3)])
+    dynamic = MarkovChainDynamic(G)
+    P = dynamic.transition_matrix.toarray()
+
+    sink_index = dynamic.node_order.index(3)
+    assert P[sink_index, sink_index] == pytest.approx(1.0)
