@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from heatmapx.dynamics import FlowDynamic, FlowDynamicBase
+from heatmapx.dynamics import FlowDynamic, FlowDynamicBase, MarkovChainDynamic
 
 
 @pytest.fixture
@@ -162,3 +162,8 @@ def test_to_graph_node_values_match_state_vector(directed_triangle):
 
     for index, node in enumerate(dynamic.node_order):
         assert heated_graph.nodes[node]['heat'] == pytest.approx(state[index])
+
+
+def test_markov_chain_satisfies_protocol(undirected_triangle):
+    dynamic = MarkovChainDynamic(undirected_triangle)
+    assert isinstance(dynamic, FlowDynamic)
