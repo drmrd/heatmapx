@@ -195,6 +195,11 @@ def test_markov_chain_dynamic_accepts_departure_rate_parameter(undirected_triang
     assert dynamic.departure_rate == 0.85
 
 
+def test_markov_chain_default_to_departure_rate_of_1(undirected_triangle):
+    dynamic = MarkovChainDynamic(undirected_triangle)
+    assert dynamic.departure_rate == 1.0
+
+
 @hyp.given(G=random_digraph())
 def test_markov_transition_matrix_columns_sum_to_one(G):
     departure_rate = 867.5309

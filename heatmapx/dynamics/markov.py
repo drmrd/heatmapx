@@ -8,10 +8,11 @@ from dynamics import FlowDynamicBase
 class MarkovChainDynamic(FlowDynamicBase):
     def __init__(self, graph: nx.Graph, departure_rate: float = 1.0):
         super().__init__(graph)
+        self._departure_rate = departure_rate
 
     @property
     def departure_rate(self):
-        return 0.85
+        return self._departure_rate
 
     @property
     def transition_matrix(self):
