@@ -217,3 +217,12 @@ def test_transition_matrix_sink_node_is_absorbing():
 
     sink_index = dynamic.node_order.index(3)
     assert P[sink_index, sink_index] == pytest.approx(1.0)
+
+
+def test_markov_step_conserves_total_mass_without_source(directed_triangle):
+    dynamic = MarkovChainDynamic(directed_triangle)
+    state = dynamic.initial_state([0])
+
+    new_state = dynamic.step(state)
+
+    assert new_state.sum() == pytest.approx(state.sum())
