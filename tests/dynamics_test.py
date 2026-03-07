@@ -1,4 +1,5 @@
 import networkx as nx
+import numpy as np
 import pytest
 
 from heatmapx.dynamics import FlowDynamic, FlowDynamicBase
@@ -115,3 +116,15 @@ def test_initial_state_supports_multiple_sources(undirected_triangle):
     state = dynamic.initial_state(source_nodes, initial=5.0)
     assert state.sum() == 5.0 * len(source_nodes)
     assert (state != 0.0).sum() == len(source_nodes)
+
+
+def test_initial_state_returns_numpy_array(undirected_triangle):
+    dynamic = make_concrete_base(undirected_triangle)
+    source_node = list(undirected_triangle.nodes)[0]
+
+    state = dynamic.initial_state([source_node], initial=867.5309)
+
+    assert isinstance(state, np.ndarray)
+    assert state.dtype == np.floating or np.issubdtype(
+        state.dtype, np.floating
+    )
