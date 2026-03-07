@@ -152,3 +152,13 @@ def test_to_graph_supports_a_custom_heat_key(directed_triangle):
     heated_graph = dynamic.to_graph(state, key='temperature')
     for node, heat in heated_graph.nodes(data='temperature'):
         assert heat is not None, f'Node {node} has no custom heat attribute.'
+
+
+def test_to_graph_node_values_match_state_vector(directed_triangle):
+    dynamic = make_concrete_base(directed_triangle)
+    state = np.array([1.0, 2.0, 3.0])
+
+    heated_graph = dynamic.to_graph(state)
+
+    for index, node in enumerate(dynamic.node_order):
+        assert heated_graph.nodes[node]['heat'] == pytest.approx(state[index])
