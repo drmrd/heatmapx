@@ -96,3 +96,13 @@ def test_initial_state_is_zero_except_at_sources(undirected_triangle):
 
     assert state[source_index] == 1.0
     assert (state != 0.0).sum() == 1
+
+
+def test_initial_state_respects_custom_initial_value(undirected_triangle):
+    source_node = list(undirected_triangle.nodes)[0]
+
+    dynamic = make_concrete_base(undirected_triangle)
+    state = dynamic.initial_state([source_node], initial=5.0)
+
+    assert state[dynamic.node_order.index(source_node)] == 5.0
+    assert (state != 0.0).sum() == 1
