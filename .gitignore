@@ -9,5 +9,7 @@
 /.dir-locals.el
 .tox
 /heatmapx.egg-info/
+.venv
+.hypothesis
 
 **/.DS_Store
