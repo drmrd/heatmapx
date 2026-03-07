@@ -106,3 +106,12 @@ def test_initial_state_respects_custom_initial_value(undirected_triangle):
 
     assert state[dynamic.node_order.index(source_node)] == 5.0
     assert (state != 0.0).sum() == 1
+
+
+def test_initial_state_supports_multiple_sources(undirected_triangle):
+    dynamic = make_concrete_base(undirected_triangle)
+    source_nodes = list(undirected_triangle.nodes)[1:]
+
+    state = dynamic.initial_state(source_nodes, initial=5.0)
+    assert state.sum() == 5.0 * len(source_nodes)
+    assert (state != 0.0).sum() == len(source_nodes)
