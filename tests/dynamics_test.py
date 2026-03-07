@@ -85,3 +85,14 @@ def test_node_order_is_deterministic_across_instances(undirected_triangle):
     instance1_node_order = make_concrete_base(undirected_triangle).node_order
     instance2_node_order = make_concrete_base(undirected_triangle).node_order
     assert instance1_node_order == instance2_node_order
+
+
+def test_initial_state_is_zero_except_at_sources(undirected_triangle):
+    dynamic = make_concrete_base(undirected_triangle)
+    source_node = list(undirected_triangle.nodes)[0]
+
+    state = dynamic.initial_state([source_node])
+    source_index = dynamic.node_order.index(source_node)
+
+    assert state[source_index] == 1.0
+    assert (state != 0.0).sum() == 1
