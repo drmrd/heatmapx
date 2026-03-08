@@ -274,3 +274,13 @@ def test_markov_apply_one_step_equals_step(directed_triangle):
     next_state_from_apply = dynamic.apply(state, time=1)
 
     np.testing.assert_allclose(next_state_from_apply, next_state_from_step)
+
+
+def test_markov_apply_converges_to_uniform_heat_on_strongly_connected(directed_triangle):
+    dynamic = MarkovChainDynamic(directed_triangle, departure_rate=0.99)
+    state = dynamic.initial_state(list(directed_triangle.nodes)[:1])
+
+    result = dynamic.apply(state, time=1000)
+
+    stationary_distribution = np.full(3, 1.0 / len(directed_triangle.nodes))
+    np.testing.assert_allclose(result, stationary_distribution, atol=1e-6)

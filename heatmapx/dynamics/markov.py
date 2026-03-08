@@ -38,7 +38,6 @@ class MarkovChainDynamic(FlowDynamicBase):
         return updated_state
 
     def apply(self, state, time, source=None):
-        if time == 0:
-            return state
-        else:
-            return self.step(state, source)
+        for _ in range(time):
+            state = self.step(state, source)
+        return state
