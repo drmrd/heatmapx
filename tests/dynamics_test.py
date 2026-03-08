@@ -284,3 +284,12 @@ def test_markov_apply_converges_to_uniform_heat_on_strongly_connected(directed_t
 
     stationary_distribution = np.full(3, 1.0 / len(directed_triangle.nodes))
     np.testing.assert_allclose(result, stationary_distribution, atol=1e-6)
+
+
+def test_markov_apply_without_heat_sources_conserves_total_mass(directed_triangle):
+    dynamic = MarkovChainDynamic(directed_triangle, departure_rate=0.5)
+    state = dynamic.initial_state(list(directed_triangle.nodes)[:1])
+
+    result = dynamic.apply(state, time=25)
+
+    assert result.sum() == pytest.approx(1.0)
