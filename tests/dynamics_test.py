@@ -255,3 +255,12 @@ def test_markov_step_supports_source_injection(directed_triangle):
     new_state = dynamic.step(state, source=source)
 
     assert new_state.sum() == pytest.approx(2.0)
+
+
+def test_markov_apply_given_zero_time_returns_same_state(directed_triangle):
+    dynamic = MarkovChainDynamic(directed_triangle)
+    state = dynamic.initial_state(list(directed_triangle.nodes)[:1])
+
+    result = dynamic.apply(state, time=0)
+
+    np.testing.assert_array_equal(result, state)
