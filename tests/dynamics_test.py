@@ -245,3 +245,13 @@ def test_markov_step_moves_mass_along_edges():
 
     assert new_state[idx_0] == pytest.approx(0.0)
     assert new_state[idx_1] == pytest.approx(1.0)
+
+
+def test_markov_step_supports_source_injection(directed_triangle):
+    dynamic = MarkovChainDynamic(directed_triangle)
+    state = dynamic.initial_state([0])
+    source = dynamic.initial_state([0])
+
+    new_state = dynamic.step(state, source=source)
+
+    assert new_state.sum() == pytest.approx(2.0)

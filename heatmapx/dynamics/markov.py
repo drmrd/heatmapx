@@ -32,6 +32,9 @@ class MarkovChainDynamic(FlowDynamicBase):
         )
 
     def step(self, state, source=None):
-        return self.transition_matrix @ state
+        updated_state = self.transition_matrix @ state
+        if source is not None:
+            updated_state += source
+        return updated_state
 
     def apply(self, state, time, source=None): return state
