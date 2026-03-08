@@ -31,6 +31,7 @@ class MarkovChainDynamic(FlowDynamicBase):
             np.where(d_out > 0, 1.0 - self.departure_rate, 1.0)
         )
 
-    def step(self, state, source=None): return state
+    def step(self, state, source=None):
+        return self.transition_matrix @ state
 
     def apply(self, state, time, source=None): return state

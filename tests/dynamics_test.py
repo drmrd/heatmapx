@@ -231,3 +231,17 @@ def test_markov_step_conserves_total_mass_without_source(directed_triangle):
     new_state = dynamic.step(state)
 
     assert new_state.sum() == pytest.approx(state.sum())
+
+
+def test_markov_step_moves_mass_along_edges():
+    G = nx.path_graph(5, create_using=nx.DiGraph)
+    dynamic = MarkovChainDynamic(G)
+    state = dynamic.initial_state([0])
+
+    new_state = dynamic.step(state)
+
+    idx_0 = dynamic.node_order.index(0)
+    idx_1 = dynamic.node_order.index(1)
+
+    assert new_state[idx_0] == pytest.approx(0.0)
+    assert new_state[idx_1] == pytest.approx(1.0)
