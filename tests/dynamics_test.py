@@ -264,3 +264,13 @@ def test_markov_apply_given_zero_time_returns_same_state(directed_triangle):
     result = dynamic.apply(state, time=0)
 
     np.testing.assert_array_equal(result, state)
+
+
+def test_markov_apply_one_step_equals_step(directed_triangle):
+    dynamic = MarkovChainDynamic(directed_triangle)
+    state = dynamic.initial_state(list(directed_triangle.nodes)[:1])
+
+    next_state_from_step = dynamic.step(state)
+    next_state_from_apply = dynamic.apply(state, time=1)
+
+    np.testing.assert_allclose(next_state_from_apply, next_state_from_step)
