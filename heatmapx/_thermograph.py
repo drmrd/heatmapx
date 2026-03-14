@@ -10,7 +10,7 @@ def temperature_graph(
     max_depth: Optional[int] = None,
     increments: Union[Iterable[Union[int, float]], int, float] = 1.0,
     weight: Optional[str] = None,
-    key: Optional[str] = 'heat'
+    key: Optional[str] = 'heat',
 ) -> nx.Graph:
     """
     Calculate temperatures radiating from heat sources in a graph.
@@ -87,26 +87,32 @@ def temperature_graph(
         visited_nodes = set()
         data_by_depth = itertools.islice(
             zip(
-                _edge_bfs_by_depth(T, [source]),
-                _consecutive_pairs(increments)
+                _edge_bfs_by_depth(T, [source]), _consecutive_pairs(increments)
             ),
-            max_depth
+            max_depth,
         )
         for edges_at_depth, (increment, next_increment) in data_by_depth:
             for edge in edges_at_depth:
-                _update_edge_temperature(T, edge, key, increment,
-                                         next_increment, weight)
-                _update_incident_node_temperatures(T, edge[:2], key, increment,
-                                                   next_increment, weight,
-                                                   visited_nodes)
+                _update_edge_temperature(
+                    T, edge, key, increment, next_increment, weight
+                )
+                _update_incident_node_temperatures(
+                    T,
+                    edge[:2],
+                    key,
+                    increment,
+                    next_increment,
+                    weight,
+                    visited_nodes,
+                )
     _update_temperatures_of_unreachable_nodes_and_edges(T, sources, key)
     return T
 
 
 def _edge_bfs_by_depth(G, source_nodes, orientation=None):
     yield from _group_by_sources(
-        nx.edge_bfs(G, source_nodes, orientation),
-        set(source_nodes))
+        nx.edge_bfs(G, source_nodes, orientation), set(source_nodes)
+    )
 
 
 def _group_by_sources(edges_iterator, initial_sources):
@@ -132,13 +138,13 @@ def _consecutive_pairs(iterable):
     return itertools.zip_longest(first_items, second_items, fillvalue=0)
 
 
-def _update_edge_temperature(G, edge, key, increment, next_increment,
-                             weight):
+def _update_edge_temperature(G, edge, key, increment, next_increment, weight):
     G.edges[edge][key] += G.edges[edge].get(weight, 1) * increment
 
 
-def _update_incident_node_temperatures(G, nodes, key, increment,
-                                       next_increment, weight, visited_nodes):
+def _update_incident_node_temperatures(
+    G, nodes, key, increment, next_increment, weight, visited_nodes
+):
     source, target = nodes
     if source not in visited_nodes:
         G.nodes[source][key] += G.nodes[source].get(weight, 1) * increment
@@ -148,12 +154,14 @@ def _update_incident_node_temperatures(G, nodes, key, increment,
 
 
 def _update_temperatures_of_unreachable_nodes_and_edges(T, sources, key):
-    unreachable_nodes = set(T) - set(sources) - set().union(*(
-        nx.descendants(T, source) for source in sources
-    ))
+    unreachable_nodes = (
+        set(T)
+        - set(sources)
+        - set().union(*(nx.descendants(T, source) for source in sources))
+    )
     coldest_temperature = max(
         max((heat for *_, heat in T.edges.data(key)), default=0),
-        max((heat for _, heat in T.nodes.data(key)), default=0)
+        max((heat for _, heat in T.nodes.data(key)), default=0),
     )
 
     for unreachable_node in unreachable_nodes:

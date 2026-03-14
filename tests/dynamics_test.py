@@ -20,9 +20,9 @@ def directed_triangle():
 
 def random_digraph(min_nodes=2, max_nodes=15, weakly_connected=False):
     weights = st.floats(allow_nan=False, allow_infinity=False)
-    node_data = st.fixed_dictionaries({
-        'name': st.text(), 'number': st.integers(), 'weight': weights
-    })
+    node_data = st.fixed_dictionaries(
+        {'name': st.text(), 'number': st.integers(), 'weight': weights}
+    )
     edge_data = st.fixed_dictionaries({'weight': weights})
 
     return hyp_nx.graph_builder(
@@ -32,7 +32,7 @@ def random_digraph(min_nodes=2, max_nodes=15, weakly_connected=False):
         edge_data=edge_data,
         min_nodes=min_nodes,
         max_nodes=max_nodes,
-        connected=weakly_connected
+        connected=weakly_connected,
     )
 
 
@@ -40,9 +40,14 @@ def make_concrete_base(G, **kwargs):
     """Instantiate a FlowDynamicBase with no-op step and apply."""
 
     class Stub(FlowDynamicBase):
-        def _build_operators(self): pass
-        def step(self, state, source=None): return state
-        def apply(self, state, time, source=None): return state
+        def _build_operators(self):
+            pass
+
+        def step(self, state, source=None):
+            return state
+
+        def apply(self, state, time, source=None):
+            return state
 
     return Stub(G, **kwargs)
 
@@ -53,6 +58,7 @@ def test_flow_dynamic_protocol_is_runtime_checkable():
     class Dummy:
         graph = property(lambda self: None)
         node_order = property(lambda self: [])
+
         def initial_state(self, sources, initial=1.0): ...
         def step(self, state, source=None): ...
         def apply(self, state, time, source=None): ...
@@ -264,7 +270,9 @@ def test_markov_apply_one_step_equals_step(directed_triangle):
     np.testing.assert_allclose(next_state_from_apply, next_state_from_step)
 
 
-def test_markov_apply_converges_to_stationary_distribution_for_normal_markov_chain(undirected_triangle):
+def test_markov_apply_converges_to_stationary_distribution_for_normal_markov_chain(
+    undirected_triangle,
+):
     dynamic = MarkovChainDynamic(undirected_triangle)
     state = dynamic.initial_state(list(undirected_triangle.nodes)[:1])
     total_nodes = len(undirected_triangle.nodes)
@@ -275,7 +283,9 @@ def test_markov_apply_converges_to_stationary_distribution_for_normal_markov_cha
     np.testing.assert_allclose(result, stationary_distribution, atol=1e-6)
 
 
-def test_markov_apply_without_heat_sources_conserves_total_mass(directed_triangle):
+def test_markov_apply_without_heat_sources_conserves_total_mass(
+    directed_triangle,
+):
     dynamic = MarkovChainDynamic(directed_triangle)
     state = dynamic.initial_state(list(directed_triangle.nodes)[:1])
 

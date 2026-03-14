@@ -16,16 +16,15 @@ class FlowDynamicBase:
         return list(self._graph.nodes)
 
     def initial_state(self, sources, initial=1.0) -> npt.NDArray[np.floating]:
-        return np.array([
-            initial if node in sources else 0.0
-            for node in self.node_order
-        ])
+        return np.array(
+            [initial if node in sources else 0.0 for node in self.node_order]
+        )
 
-    def to_graph(self, state: npt.NDArray, key: str = 'heat') -> nx.MultiDiGraph:
+    def to_graph(
+        self, state: npt.NDArray, key: str = 'heat'
+    ) -> nx.MultiDiGraph:
         heated_graph = nx.MultiDiGraph(self._graph)
         nx.set_node_attributes(
-            heated_graph,
-            dict(zip(self.node_order, state)),
-            name=key
+            heated_graph, dict(zip(self.node_order, state)), name=key
         )
         return heated_graph
