@@ -190,28 +190,16 @@ def test_markov_chain_satisfies_protocol(undirected_triangle):
     assert isinstance(dynamic, FlowDynamic)
 
 
-def test_markov_chain_dynamic_accepts_departure_rate_parameter(undirected_triangle):
-    dynamic = MarkovChainDynamic(undirected_triangle, departure_rate=0.85)
-    assert dynamic.departure_rate == 0.85
-
-
-def test_markov_chain_default_to_departure_rate_of_1(undirected_triangle):
-    dynamic = MarkovChainDynamic(undirected_triangle)
-    assert dynamic.departure_rate == 1.0
-
-
 @hyp.given(G=random_digraph())
 def test_markov_transition_matrix_columns_sum_to_one(G):
-    departure_rate = 867.5309
-    dynamic = MarkovChainDynamic(G, departure_rate=departure_rate)
+    dynamic = MarkovChainDynamic(G)
     P = dynamic.transition_matrix
 
     col_sums = np.asarray(P.sum(axis=0)).flatten()
     for i, node in enumerate(dynamic.node_order):
         if G.out_degree(node) > 0 or G.in_degree(node) > 0:
             assert col_sums[i] == pytest.approx(1.0, abs=1e-12), (
-                f'Column for node {node} sums to {col_sums[i]}, expected '
-                f'{departure_rate}.'
+                f'Column for node {node} sums to {col_sums[i]}, expected 1.'
             )
 
 
@@ -276,18 +264,19 @@ def test_markov_apply_one_step_equals_step(directed_triangle):
     np.testing.assert_allclose(next_state_from_apply, next_state_from_step)
 
 
-def test_markov_apply_converges_to_uniform_heat_on_strongly_connected(directed_triangle):
-    dynamic = MarkovChainDynamic(directed_triangle, departure_rate=0.99)
-    state = dynamic.initial_state(list(directed_triangle.nodes)[:1])
+def test_markov_apply_converges_to_stationary_distribution_for_normal_markov_chain(undirected_triangle):
+    dynamic = MarkovChainDynamic(undirected_triangle)
+    state = dynamic.initial_state(list(undirected_triangle.nodes)[:1])
+    total_nodes = len(undirected_triangle.nodes)
 
     result = dynamic.apply(state, time=1000)
 
-    stationary_distribution = np.full(3, 1.0 / len(directed_triangle.nodes))
+    stationary_distribution = np.full(total_nodes, 1.0 / total_nodes)
     np.testing.assert_allclose(result, stationary_distribution, atol=1e-6)
 
 
 def test_markov_apply_without_heat_sources_conserves_total_mass(directed_triangle):
-    dynamic = MarkovChainDynamic(directed_triangle, departure_rate=0.5)
+    dynamic = MarkovChainDynamic(directed_triangle)
     state = dynamic.initial_state(list(directed_triangle.nodes)[:1])
 
     result = dynamic.apply(state, time=25)
