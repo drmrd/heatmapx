@@ -5,8 +5,8 @@ import numpy.typing as npt
 
 
 @runtime_checkable
-class FlowDynamic(Protocol):
-    """A simulator for network dynamics."""
+class Flow(Protocol):
+    """A simulator for network flow."""
 
     @property
     def graph(self) -> nx.MultiDiGraph: ...

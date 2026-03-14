@@ -2,10 +2,10 @@ import numpy as np
 import networkx as nx
 import scipy.sparse
 
-from . import FlowDynamicBase
+from . import FlowBase
 
 
-class MarkovChainDynamic(FlowDynamicBase):
+class MarkovChainFlow(FlowBase):
     def __init__(self, graph: nx.Graph, weight: str = 'weight'):
         super().__init__(graph)
         self._weight = weight

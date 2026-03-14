@@ -3,7 +3,7 @@ import numpy as np
 import numpy.typing as npt
 
 
-class FlowDynamicBase:
+class FlowBase:
     def __init__(self, graph: nx.Graph, **kwargs):
         self._graph = nx.MultiDiGraph(graph)
 
