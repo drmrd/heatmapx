@@ -19,7 +19,12 @@ def directed_triangle():
 
 
 def random_digraph(min_nodes=2, max_nodes=15, weakly_connected=False):
-    weights = st.floats(allow_nan=False, allow_infinity=False)
+    weights = st.floats(
+        allow_nan=False,
+        allow_infinity=False,
+        min_value=-1e154,
+        max_value=1e154,
+    )
     node_data = st.fixed_dictionaries(
         {'name': st.text(), 'number': st.integers(), 'weight': weights}
     )
@@ -207,6 +212,14 @@ def test_markov_transition_matrix_columns_sum_to_one(G):
             assert col_sums[i] == pytest.approx(1.0, abs=1e-12), (
                 f'Column for node {node} sums to {col_sums[i]}, expected 1.0.'
             )
+
+
+def test_markov_raises_on_transition_matrix_weight_overflow():
+    G = nx.DiGraph([(0, 1, {'weight': 1e308}), (0, 2, {'weight': 1e308})])
+    flow = MarkovChainFlow(G, weight='weight')
+
+    with pytest.raises(ValueError, match='overflow'):
+        flow.transition_matrix
 
 
 def test_transition_matrix_sink_node_is_absorbing():
