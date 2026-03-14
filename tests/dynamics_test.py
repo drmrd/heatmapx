@@ -5,7 +5,12 @@ import networkx as nx
 import numpy as np
 import pytest
 
-from heatmapx.flows import Flow, FlowBase, MarkovChainFlow
+from heatmapx.flows import (
+    CapacityConstrainedFlow,
+    Flow,
+    FlowBase,
+    MarkovChainFlow,
+)
 
 
 @pytest.fixture
@@ -45,9 +50,6 @@ def make_concrete_base(G, **kwargs):
     """Instantiate a FlowBase with no-op step and apply."""
 
     class Stub(FlowBase):
-        def _build_operators(self):
-            pass
-
         def step(self, state, source=None):
             return state
 
@@ -340,3 +342,12 @@ def test_markov_respects_edge_weights():
     index_2 = flow.node_order.index(2)
     assert new_state[index_1] == pytest.approx(0.75)
     assert new_state[index_2] == pytest.approx(0.25)
+
+
+def test_capacity_flow_satisfies_protocol(directed_triangle):
+    for edge in directed_triangle.edges():
+        directed_triangle.edges[edge]['capacity'] = 1.0
+
+    flow = CapacityConstrainedFlow(directed_triangle)
+
+    assert isinstance(flow, Flow)
