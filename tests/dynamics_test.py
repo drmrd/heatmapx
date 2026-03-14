@@ -201,6 +201,14 @@ def test_markov_chain_satisfies_protocol(undirected_triangle):
     assert isinstance(flow, Flow)
 
 
+@pytest.mark.parametrize('offending_weight', (np.inf, -np.inf, np.nan))
+def test_markov_raises_on_nonfinite_edge_weights(offending_weight):
+    with pytest.raises(ValueError, match='finite'):
+        MarkovChainFlow(
+            nx.DiGraph([(0, 1, {'weight': offending_weight})])
+        )
+
+
 @hyp.given(G=random_digraph())
 def test_markov_transition_matrix_columns_sum_to_one(G):
     flow = MarkovChainFlow(G)

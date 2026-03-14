@@ -9,6 +9,7 @@ class MarkovChainFlow(FlowBase):
     def __init__(self, graph: nx.Graph, weight: str = 'weight'):
         super().__init__(graph)
         self._weight = weight
+        self._validate_weights()
 
     @property
     def transition_matrix(self):
@@ -49,3 +50,15 @@ class MarkovChainFlow(FlowBase):
         for _ in range(time):
             state = self.step(state, source)
         return state
+
+    def _validate_weights(self):
+        has_nonfinite_edge_weight = any(
+            not np.isfinite(data.get(self._weight))
+            for *_, data in self.graph.edges(keys=True, data=True)
+            if self._weight in data
+        )
+        if has_nonfinite_edge_weight:
+            raise ValueError(
+                f'Edges exist in the provided graph with non-finite '
+                f'{self._weight} attributes.'
+            )
