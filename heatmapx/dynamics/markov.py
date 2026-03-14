@@ -6,12 +6,13 @@ from . import FlowDynamicBase
 
 
 class MarkovChainDynamic(FlowDynamicBase):
-    def __init__(self, graph: nx.Graph):
+    def __init__(self, graph: nx.Graph, weight: str = 'weight'):
         super().__init__(graph)
+        self._weight = weight
 
     @property
     def transition_matrix(self):
-        W = nx.to_scipy_sparse_array(self.graph, weight='heat')
+        W = nx.to_scipy_sparse_array(self.graph, weight=self._weight)
         d_out = np.asarray(W.sum(axis=1)).flatten()
         d_out_inv = np.zeros_like(d_out, dtype=float)
         np.divide(1.0, d_out, out=d_out_inv, where=d_out != 0)

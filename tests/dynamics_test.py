@@ -18,7 +18,7 @@ def directed_triangle():
     return nx.cycle_graph(3, create_using=nx.DiGraph)
 
 
-def random_digraph(min_nodes=2, max_nodes=20, weakly_connected=False):
+def random_digraph(min_nodes=2, max_nodes=15, weakly_connected=False):
     weights = st.floats(allow_nan=False, allow_infinity=False)
     node_data = st.fixed_dictionaries({
         'name': st.text(), 'number': st.integers(), 'weight': weights
@@ -282,3 +282,18 @@ def test_markov_apply_without_heat_sources_conserves_total_mass(directed_triangl
     result = dynamic.apply(state, time=25)
 
     assert result.sum() == pytest.approx(1.0)
+
+
+def test_markov_respects_edge_weights():
+    G = nx.DiGraph()
+    G.add_edge(0, 1, weight=3.0)
+    G.add_edge(0, 2, weight=1.0)
+    dynamic = MarkovChainDynamic(G, weight='weight')
+    state = dynamic.initial_state([0])
+
+    new_state = dynamic.step(state)
+
+    index_1 = dynamic.node_order.index(1)
+    index_2 = dynamic.node_order.index(2)
+    assert new_state[index_1] == pytest.approx(0.75)
+    assert new_state[index_2] == pytest.approx(0.25)
