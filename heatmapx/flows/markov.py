@@ -1,3 +1,5 @@
+from functools import cached_property
+
 import numpy as np
 import networkx as nx
 import scipy.sparse
@@ -11,7 +13,7 @@ class MarkovChainFlow(FlowBase):
         self._weight = weight
         self._validate_weights()
 
-    @property
+    @cached_property
     def transition_matrix(self):
         W = nx.to_scipy_sparse_array(self.graph, weight=self._weight)
 

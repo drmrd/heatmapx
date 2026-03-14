@@ -204,9 +204,7 @@ def test_markov_chain_satisfies_protocol(undirected_triangle):
 @pytest.mark.parametrize('offending_weight', (np.inf, -np.inf, np.nan))
 def test_markov_raises_on_nonfinite_edge_weights(offending_weight):
     with pytest.raises(ValueError, match='finite'):
-        MarkovChainFlow(
-            nx.DiGraph([(0, 1, {'weight': offending_weight})])
-        )
+        MarkovChainFlow(nx.DiGraph([(0, 1, {'weight': offending_weight})]))
 
 
 @hyp.given(G=random_digraph())
@@ -230,13 +228,27 @@ def test_markov_raises_on_transition_matrix_weight_overflow():
         flow.transition_matrix
 
 
-def test_transition_matrix_sink_node_is_absorbing():
+def test_markov_transition_matrix_sink_node_is_absorbing():
     G = nx.DiGraph([(0, 1), (0, 2), (1, 3), (2, 3)])
     flow = MarkovChainFlow(G)
     P = flow.transition_matrix.toarray()
 
     sink_index = flow.node_order.index(3)
     assert P[sink_index, sink_index] == pytest.approx(1.0)
+
+
+def test_markov_transition_matrix_is_cached(directed_triangle, mocker):
+    flow = MarkovChainFlow(directed_triangle)
+
+    to_scipy_sparse_array_mock = mocker.patch(
+        'heatmapx.flows.markov.nx.to_scipy_sparse_array',
+        wraps=nx.to_scipy_sparse_array,
+    )
+
+    flow.transition_matrix
+    flow.transition_matrix
+
+    to_scipy_sparse_array_mock.assert_called_once()
 
 
 def test_markov_step_conserves_total_mass_without_source(directed_triangle):
