@@ -344,10 +344,53 @@ def test_markov_respects_edge_weights():
     assert new_state[index_2] == pytest.approx(0.25)
 
 
-def test_capacity_flow_satisfies_protocol(directed_triangle):
-    for edge in directed_triangle.edges():
-        directed_triangle.edges[edge]['capacity'] = 1.0
+def test_capacity_constrained_flow_satisfies_protocol(directed_triangle):
+    nx.set_edge_attributes(directed_triangle, name='capacity', values=1.0)
 
     flow = CapacityConstrainedFlow(directed_triangle)
 
     assert isinstance(flow, Flow)
+
+
+def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and_capacities():
+    G = nx.DiGraph([(0, 1, {'capacity': 0.3}), (1, 2, {'capacity': 1.8})])
+    flow = CapacityConstrainedFlow(G)
+
+    state = flow.initial_state([0], initial=1)
+    new_state = flow.step(state)
+
+    index_0 = flow.node_order.index(0)
+    index_1 = flow.node_order.index(1)
+    index_2 = flow.node_order.index(2)
+
+    assert new_state[index_0] == pytest.approx(0.7)
+    assert new_state[index_1] == pytest.approx(0.3)
+    assert new_state[index_2] == pytest.approx(2.0)
+
+
+def test_capacity_constrained_flow_capacity_limits_flow_through_edge():
+    G = nx.DiGraph([(0, 1)])
+    G.edges[0, 1]['capacity'] = 0.5
+    flow = CapacityConstrainedFlow(G)
+    index_0 = flow.node_order.index(0)
+    index_1 = flow.node_order.index(1)
+    state = flow.initial_state([0], initial=10.0)
+
+    new_state = flow.step(state)
+
+    assert new_state[index_1] == pytest.approx(0.5)
+    assert new_state[index_0] == pytest.approx(9.5)
+
+
+def test_capacity_constrained_flow_given_larger_capacity_than_occupancy_yields_full_departure():
+    G = nx.DiGraph([(0, 1)])
+    G.edges[0, 1]['capacity'] = 100.0
+    flow = CapacityConstrainedFlow(G)
+    index_0 = flow.node_order.index(0)
+    index_1 = flow.node_order.index(1)
+    state = flow.initial_state([0], initial=1.0)
+
+    new_state = flow.step(state)
+
+    assert new_state[index_0] == pytest.approx(0.0)
+    assert new_state[index_1] == pytest.approx(1.0)
