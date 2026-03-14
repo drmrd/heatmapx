@@ -270,7 +270,7 @@ def test_markov_apply_one_step_equals_step(directed_triangle):
     np.testing.assert_allclose(next_state_from_apply, next_state_from_step)
 
 
-def test_markov_apply_converges_to_stationary_distribution_for_normal_markov_chain(
+def test_markov_apply_converges_to_stationary_distribution_for_normal_markov_chain(  # noqa: E501
     undirected_triangle,
 ):
     dynamic = MarkovChainDynamic(undirected_triangle)

@@ -162,7 +162,7 @@ def test_the_last_increment_in_an_iterable_is_repeated_indefinitely():
         )
 
 
-def test_providing_an_empty_increments_iterable_results_in_an_informative_error():
+def test_providing_an_empty_increments_iterable_results_in_an_informative_error():  # noqa: E501
     with pytest.raises(
         ValueError, match='increments iterable must be nonempty'
     ):

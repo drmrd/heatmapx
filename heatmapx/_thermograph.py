@@ -15,14 +15,14 @@ def temperature_graph(
     """
     Calculate temperatures radiating from heat sources in a graph.
 
-    Temperature values are initially set to 0 and then updated throughout
-    `G` in a breadth-first manner beginning at each node in `sources`.
-    For each source node `s`, the temperature of each edge `e` and its
-    incident nodes in `G` are updated according to `increments` and how
-    many edges away they are from the source node `s`. This process is
-    repeated for every source node, with temperatures from multiple source
-    nodes contributing additively to the overall temperature of the nodes
-    and edges in the graph.
+    Temperature values are initially set to 0 and then updated
+    throughout `G` in a breadth-first manner beginning at each node in
+    `sources`. For each source node `s`, the temperature of each edge
+    `e` and its incident nodes in `G` are updated according to
+    `increments` and how many edges away they are from the source node
+    `s`. This process is repeated for every source node, with
+    temperatures from multiple source nodes contributing additively to
+    the overall temperature of the nodes and edges in the graph.
 
     Parameters
     ----------
@@ -36,15 +36,15 @@ def temperature_graph(
         The number of breadth-first search layers to traverse while
         updating node and edge temperatures. (Equivalently, the maximum
         graph distance away from a source node at which to update
-        temperatures.) If left unspecified, all nodes and edges reachable
-        from a source node will be updated.
+        temperatures.) If left unspecified, all nodes and edges
+        reachable from a source node will be updated.
 
     increments : iterable of float or float, default 1.0
         A sequence whose `n`-th element gives, for each source node `s`,
-        the amount to update the temperature of each node and edge that is
-        `n` breadth-first layers away from `s`. A constant value may also
-        be provided to apply to all nodes and edges in the same connected
-        component as each source node.
+        the amount to update the temperature of each node and edge that
+        is `n` breadth-first layers away from `s`. A constant value may
+        also be provided to apply to all nodes and edges in the same
+        connected component as each source node.
 
         If the provided iterable is exhausted before `temperature_graph`
         finishes calculating temperatures for graph elements, the final
@@ -52,9 +52,9 @@ def temperature_graph(
         graph.
 
     weight : str, optional
-        A node and edge attribute that should be used to multiplicatively
-        scale heat increments. Heat increments are not scaled by a weight
-        attribute by default.
+        A node and edge attribute that should be used to
+        multiplicatively scale heat increments. Heat increments are not
+        scaled by a weight attribute by default.
 
     key : str, default 'heat'
         The name of the node and edge attribute where temperature values
