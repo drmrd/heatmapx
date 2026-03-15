@@ -371,6 +371,20 @@ def test_capacity_constrained_flow_satisfies_protocol(directed_triangle):
     assert isinstance(flow, Flow)
 
 
+def test_capacity_constrained_flow_raises_on_nan_capacity():
+    G = nx.DiGraph([(0, 1, {'capacity': np.nan})])
+
+    with pytest.raises(ValueError, match='non-finite'):
+        CapacityConstrainedFlow(G)
+
+
+def test_capacity_constrained_flow_raises_on_infinite_capacity():
+    G = nx.DiGraph([(0, 1, {'capacity': np.inf})])
+
+    with pytest.raises(ValueError, match='non-finite'):
+        CapacityConstrainedFlow(G)
+
+
 def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and_capacities():
     G = nx.DiGraph([(0, 1, {'capacity': 0.3}), (1, 2, {'capacity': 1.8})])
     flow = CapacityConstrainedFlow(G)

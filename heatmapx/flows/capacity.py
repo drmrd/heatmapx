@@ -7,6 +7,7 @@ from . import FlowBase
 class CapacityConstrainedFlow(FlowBase):
     def __init__(self, graph: nx.Graph):
         super().__init__(graph)
+        self._validate_weights()
 
     def step(self, state, source=None):
         # Calculate the unnormalized capacities of each edge in the graph
@@ -33,3 +34,15 @@ class CapacityConstrainedFlow(FlowBase):
 
     def apply(self, state, time, source=None):
         return state
+
+    def _validate_weights(self):
+        has_nonfinite_edge_weight = any(
+            not np.isfinite(data.get('capacity'))
+            for *_, data in self.graph.edges(keys=True, data=True)
+            if 'capacity' in data
+        )
+        if has_nonfinite_edge_weight:
+            raise ValueError(
+                'Edges exist in the provided graph with non-finite capacity '
+                'attributes.'
+            )
