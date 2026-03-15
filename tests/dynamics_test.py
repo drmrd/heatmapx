@@ -23,17 +23,29 @@ def directed_triangle():
     return nx.cycle_graph(3, create_using=nx.DiGraph)
 
 
-def random_digraph(min_nodes=2, max_nodes=15, weakly_connected=False):
-    weights = st.floats(
+def random_digraph(
+    min_nodes=2,
+    max_nodes=15,
+    node_data=None,
+    edge_data=None,
+    weakly_connected=False,
+):
+    default_weights = st.floats(
         allow_nan=False,
         allow_infinity=False,
         min_value=-1e154,
         max_value=1e154,
     )
-    node_data = st.fixed_dictionaries(
-        {'name': st.text(), 'number': st.integers(), 'weight': weights}
-    )
-    edge_data = st.fixed_dictionaries({'weight': weights})
+    if node_data is None:
+        node_data = st.fixed_dictionaries(
+            {
+                'name': st.text(),
+                'number': st.integers(),
+                'weight': default_weights,
+            }
+        )
+    if edge_data is None:
+        edge_data = st.fixed_dictionaries({'weight': default_weights})
 
     return hyp_nx.graph_builder(
         graph_type=nx.DiGraph,
@@ -356,7 +368,7 @@ def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and
     G = nx.DiGraph([(0, 1, {'capacity': 0.3}), (1, 2, {'capacity': 1.8})])
     flow = CapacityConstrainedFlow(G)
 
-    state = flow.initial_state([0], initial=1)
+    state = flow.initial_state([0, 1, 2], initial=1)
     new_state = flow.step(state)
 
     index_0 = flow.node_order.index(0)
@@ -394,3 +406,25 @@ def test_capacity_constrained_flow_given_larger_capacity_than_occupancy_yields_f
 
     assert new_state[index_0] == pytest.approx(0.0)
     assert new_state[index_1] == pytest.approx(1.0)
+
+
+@hyp.given(
+    G=random_digraph(
+        edge_data=st.fixed_dictionaries(
+            {'capacity': st.floats(min_value=0.01, max_value=10.0)}
+        )
+    ),
+    initial=st.floats(min_value=0.1, max_value=100.0),
+    steps=st.integers(min_value=1, max_value=50),
+)
+def test_capacity_constrained_flow_step_conserves_total_mass_without_source(
+    G, initial, steps
+):
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state(list(G.nodes)[:1], initial=initial)
+
+    for _ in range(steps):
+        state = flow.step(state)
+
+    assert state.sum() == pytest.approx(initial, rel=1e-10)
+    assert np.all(state >= -1e-15)
