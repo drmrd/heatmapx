@@ -428,3 +428,23 @@ def test_capacity_constrained_flow_step_conserves_total_mass_without_source(
 
     assert state.sum() == pytest.approx(initial, rel=1e-10)
     assert np.all(state >= -1e-15)
+
+
+def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights():
+    G = nx.DiGraph([(0, 1, {'capacity': 3.0}),
+    (1, 2, {'capacity': 1.0}),
+    (2, 0, {'capacity': 2.0})])
+    markov = MarkovChainFlow(G, weight='capacity')
+    capacity = CapacityConstrainedFlow(G)
+
+    initial_state_markov = markov.initial_state([0], initial=0.5)
+    initial_state_capacity = capacity.initial_state([0], initial=0.5)
+    updated_state_markov = markov.step(initial_state_markov)
+    updated_state_capacity = capacity.step(initial_state_capacity)
+
+    np.testing.assert_allclose(initial_state_markov, initial_state_capacity)
+    np.testing.assert_allclose(
+        updated_state_markov,
+        updated_state_capacity,
+        atol=1e-12,
+    )
