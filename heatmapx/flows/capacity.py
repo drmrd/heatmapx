@@ -11,7 +11,8 @@ class CapacityConstrainedFlow(FlowBase):
     def step(self, state, source=None):
         # Calculate the unnormalized capacities of each edge in the graph
         C = nx.to_scipy_sparse_array(
-            self.graph, weight='capacity', nodelist=self.node_order
+            self.graph, weight='capacity', nodelist=self.node_order,
+            dtype=np.float64,
         ).T.tocsr()
 
         # Normalize based on the out-capacity of each node

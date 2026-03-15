@@ -29,10 +29,11 @@ def random_digraph(
     node_data=None,
     edge_data=None,
     weakly_connected=False,
-):
+) -> st.SearchStrategy[nx.DiGraph]:
     default_weights = st.floats(
         allow_nan=False,
         allow_infinity=False,
+        allow_subnormal=False,
         min_value=-1e154,
         max_value=1e154,
     )
@@ -171,9 +172,7 @@ def test_initial_state_returns_numpy_array(undirected_triangle):
     state = flow.initial_state([source_node], initial=867.5309)
 
     assert isinstance(state, np.ndarray)
-    assert state.dtype == np.floating or np.issubdtype(
-        state.dtype, np.floating
-    )
+    assert np.issubdtype(state.dtype, np.floating)
 
 
 def test_to_graph_returns_a_new_graph_with_heat_attribute(directed_triangle):
@@ -239,6 +238,14 @@ def test_markov_raises_on_transition_matrix_weight_overflow():
     flow = MarkovChainFlow(G, weight='weight')
 
     with pytest.raises(ValueError, match='overflow'):
+        flow.transition_matrix
+
+
+def test_markov_raises_on_transition_matrix_weight_underflow():
+    G = nx.DiGraph([(0, 1, {'weight': 5e-324})])
+    flow = MarkovChainFlow(G, weight='weight')
+
+    with pytest.raises(ValueError, match='too small'):
         flow.transition_matrix
 
 
@@ -431,9 +438,13 @@ def test_capacity_constrained_flow_step_conserves_total_mass_without_source(
 
 
 def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights():
-    G = nx.DiGraph([(0, 1, {'capacity': 3.0}),
-    (1, 2, {'capacity': 1.0}),
-    (2, 0, {'capacity': 2.0})])
+    G = nx.DiGraph(
+        [
+            (0, 1, {'capacity': 3.0}),
+            (1, 2, {'capacity': 1.0}),
+            (2, 0, {'capacity': 2.0}),
+        ]
+    )
     markov = MarkovChainFlow(G, weight='capacity')
     capacity = CapacityConstrainedFlow(G)
 

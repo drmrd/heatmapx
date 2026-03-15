@@ -21,20 +21,28 @@ class MarkovChainFlow(FlowBase):
 
         d_out = np.asarray(W.sum(axis=0)).flatten()
         if np.any(np.isinf(d_out)):
-            overflowed_nodes = [
+            underflowed_nodes = [
                 node for node, d in zip(self.node_order, d_out) if np.isinf(d)
             ]
             raise ValueError(
-                ' '.join(
-                    [
-                        'Failed to construct transition matrix. The following nodes '
-                        f'have infinite weighted out-degree: {overflowed_nodes}. Their',
-                        'edge weights are too large to sum without overflow.',
-                    ]
-                )
+                'Failed to construct transition matrix. The following nodes '
+                f'have infinite weighted out-degree: {underflowed_nodes}. '
+                'Their edge weights are too large to sum without overflow.'
             )
         d_out_inv = np.zeros_like(d_out, dtype=float)
-        np.divide(1.0, d_out, out=d_out_inv, where=d_out != 0)
+        with np.errstate(over='ignore'):
+            np.divide(1.0, d_out, out=d_out_inv, where=d_out != 0)
+        if np.any(np.isinf(d_out_inv)):
+            underflowed_nodes = [
+                node
+                for node, d in zip(self.node_order, d_out_inv)
+                if np.isinf(d)
+            ]
+            raise ValueError(
+                'Failed to construct transition matrix. The following nodes '
+                f'have infinite weighted out-degree: {underflowed_nodes}. '
+                'Their edge weights are too small to invert without underflow.'
+            )
 
         # P = W @ diag(d_out^{-1}); column-stochastic
         P = W.multiply(d_out_inv)
