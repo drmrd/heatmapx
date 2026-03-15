@@ -15,9 +15,11 @@ class MarkovChainFlow(FlowBase):
 
     @cached_property
     def transition_matrix(self):
-        W = nx.to_scipy_sparse_array(self.graph, weight=self._weight)
+        W = nx.to_scipy_sparse_array(
+            self.graph, weight=self._weight, nodelist=self.node_order
+        ).T.tocsr()
 
-        d_out = np.asarray(W.sum(axis=1)).flatten()
+        d_out = np.asarray(W.sum(axis=0)).flatten()
         if np.any(np.isinf(d_out)):
             overflowed_nodes = [
                 node for node, d in zip(self.node_order, d_out) if np.isinf(d)
@@ -31,12 +33,11 @@ class MarkovChainFlow(FlowBase):
                     ]
                 )
             )
-
         d_out_inv = np.zeros_like(d_out, dtype=float)
         np.divide(1.0, d_out, out=d_out_inv, where=d_out != 0)
 
-        # (D_out^{-1} W)^T; column-stochastic
-        P = (scipy.sparse.diags(d_out_inv) @ W).T.tocsr()
+        # P = W @ diag(d_out^{-1}); column-stochastic
+        P = W.multiply(d_out_inv)
 
         # Sinks get a self-loop to remain absorbing
         is_sink = d_out == 0
