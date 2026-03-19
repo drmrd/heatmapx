@@ -15,7 +15,9 @@ class FlowBase:
     def node_order(self) -> list:
         return list(self._graph.nodes)
 
-    def initial_state(self, sources: list | dict, initial=1.0) -> npt.NDArray[np.floating]:
+    def initial_state(
+        self, sources: list | dict, initial=1.0
+    ) -> npt.NDArray[np.floating]:
         initial_states = np.zeros((len(self._graph),))
         try:
             for source, initial_state in sources.items():

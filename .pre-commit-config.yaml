@@ -1,0 +1,24 @@
+repos:
+    - repo: local
+      hooks:
+          - id: ruff-format
+            name: ruff format
+            language: system
+            entry: uv run ruff format
+            types: [python]
+            stages: [pre-commit]
+
+          - id: ruff-lint-fix
+            name: ruff lint (fix)
+            language: system
+            entry: uv run ruff check --fix
+            types: [python]
+            stages: [pre-commit]
+
+          - id: ruff-stage-fixes
+            name: stage ruff fixes
+            language: system
+            entry: bash -c 'git diff --name-only -- "$@" | xargs -r git add' --
+            types: [python]
+            pass_filenames: true
+            stages: [pre-commit]

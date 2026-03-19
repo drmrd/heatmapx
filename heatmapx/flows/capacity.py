@@ -12,9 +12,12 @@ class CapacityConstrainedFlow(FlowBase):
         self._validate_weights()
 
     def step(self, state, source=None):
-        # Calculate the unnormalized capacities of each edge in the graph
+        # Calculate the unnormalized capacities of each edge in the
+        # graph
         C = nx.to_scipy_sparse_array(
-            self.graph, weight=self._capacity_attribute, nodelist=self.node_order,
+            self.graph,
+            weight=self._capacity_attribute,
+            nodelist=self.node_order,
             dtype=np.float64,
         ).T.tocsr()
 
