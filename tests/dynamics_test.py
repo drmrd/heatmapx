@@ -7,6 +7,7 @@ import pytest
 
 from heatmapx.flows import (
     CapacityConstrainedFlow,
+    DiffusionFlow,
     Flow,
     FlowBase,
     MarkovChainFlow,
@@ -442,7 +443,7 @@ def test_capacity_constrained_flow_raises_on_negative_capacity():
         CapacityConstrainedFlow(G)
 
 
-def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and_capacities():
+def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and_capacities():  # noqa: E501
     G = nx.DiGraph([(0, 1, {'capacity': 0.3}), (1, 2, {'capacity': 1.8})])
     flow = CapacityConstrainedFlow(G)
     state = flow.initial_state([0, 1, 2], initial=1)
@@ -483,7 +484,7 @@ def test_capacity_constrained_flow_capacity_limits_flow_through_edge():
     assert new_state[index_0] == pytest.approx(9.5)
 
 
-def test_capacity_constrained_flow_given_larger_capacity_than_occupancy_yields_full_departure():
+def test_capacity_constrained_flow_given_larger_capacity_than_occupancy_yields_full_departure():  # noqa: E501
     G = nx.DiGraph([(0, 1)])
     G.edges[0, 1]['capacity'] = 100.0
     flow = CapacityConstrainedFlow(G)
@@ -519,7 +520,7 @@ def test_capacity_constrained_flow_step_conserves_total_mass_without_source(
     assert np.all(state >= -1e-15)
 
 
-def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights():
+def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights():  # noqa: E501
     G = nx.DiGraph(
         [
             (0, 1, {'capacity': 3.0}),
@@ -551,7 +552,9 @@ def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights()
     ),
     steps=st.integers(min_value=0, max_value=50),
 )
-def test_capacity_apply_matches_iterated_steps(graph_state_pair, steps):
+def test_capacity_constrained_flow_apply_matches_iterated_steps(
+    graph_state_pair, steps
+):
     G, initial_state = graph_state_pair
     flow = CapacityConstrainedFlow(G)
     state = flow.initial_state(initial_state)
@@ -562,3 +565,9 @@ def test_capacity_apply_matches_iterated_steps(graph_state_pair, steps):
 
     apply_state = flow.apply(state, time=steps)
     np.testing.assert_allclose(apply_state, iterated_steps_state)
+
+
+def test_diffusion_flow_satisfies_protocol(directed_triangle):
+    flow = DiffusionFlow(directed_triangle)
+
+    assert isinstance(flow, Flow)
