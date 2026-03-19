@@ -58,9 +58,32 @@ class MarkovChainFlow(FlowBase):
         return updated_state
 
     def apply(self, state, time, source=None):
-        for _ in range(time):
-            state = self.step(state, source)
-        return state
+        node_count = len(state)
+
+        if source is None:
+            step_map = self.transition_matrix
+        else:
+            source_column = source[:, np.newaxis]
+            # The affine `state |-> P @ state + source` map lifted to a
+            # linear map in homogeneous coordinates.
+            step_map = scipy.sparse.bmat(
+                [
+                    [
+                        self.transition_matrix,
+                        scipy.sparse.csr_array(source_column),
+                    ],
+                    [
+                        scipy.sparse.csr_array((1, node_count)),
+                        scipy.sparse.eye(1),
+                    ],
+                ],
+                format='csr',
+            )
+            state = np.append(state, 1.0)
+
+        return (scipy.sparse.linalg.matrix_power(step_map, time) @ state)[
+            :node_count
+        ]
 
     def _validate_weights(self):
         has_nonfinite_edge_weight = any(
