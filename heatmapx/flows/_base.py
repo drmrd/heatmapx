@@ -15,10 +15,16 @@ class FlowBase:
     def node_order(self) -> list:
         return list(self._graph.nodes)
 
-    def initial_state(self, sources, initial=1.0) -> npt.NDArray[np.floating]:
-        return np.array(
-            [initial if node in sources else 0.0 for node in self.node_order]
-        )
+    def initial_state(self, sources: list | dict, initial=1.0) -> npt.NDArray[np.floating]:
+        initial_states = np.zeros((len(self._graph),))
+        try:
+            for source, initial_state in sources.items():
+                initial_states[self.node_order.index(source)] = initial_state
+        except AttributeError:
+            for source in sources:
+                initial_states[self.node_order.index(source)] = initial
+
+        return initial_states
 
     def to_graph(
         self, state: npt.NDArray, key: str = 'heat'

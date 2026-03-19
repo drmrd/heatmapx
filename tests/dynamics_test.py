@@ -165,6 +165,16 @@ def test_initial_state_supports_multiple_sources(undirected_triangle):
     assert (state != 0.0).sum() == len(source_nodes)
 
 
+def test_initial_state_supports_per_node_values(undirected_triangle):
+    flow = make_concrete_base(undirected_triangle)
+
+    state = flow.initial_state({0: 1.0, 2: 3.0})
+
+    assert state[flow.node_order.index(0)] == pytest.approx(1.0)
+    assert state[flow.node_order.index(1)] == pytest.approx(0.0)
+    assert state[flow.node_order.index(2)] == pytest.approx(3.0)
+
+
 def test_initial_state_returns_numpy_array(undirected_triangle):
     flow = make_concrete_base(undirected_triangle)
     source_node = list(undirected_triangle.nodes)[0]
