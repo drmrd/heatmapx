@@ -5,14 +5,16 @@ from . import FlowBase
 
 
 class CapacityConstrainedFlow(FlowBase):
-    def __init__(self, graph: nx.Graph):
+    def __init__(self, graph: nx.Graph, capacity_attribute: str = 'capacity'):
         super().__init__(graph)
+        self._capacity_attribute = capacity_attribute
+
         self._validate_weights()
 
     def step(self, state, source=None):
         # Calculate the unnormalized capacities of each edge in the graph
         C = nx.to_scipy_sparse_array(
-            self.graph, weight='capacity', nodelist=self.node_order,
+            self.graph, weight=self._capacity_attribute, nodelist=self.node_order,
             dtype=np.float64,
         ).T.tocsr()
 
@@ -37,9 +39,9 @@ class CapacityConstrainedFlow(FlowBase):
 
     def _validate_weights(self):
         has_nonfinite_edge_weight = any(
-            not np.isfinite(data.get('capacity'))
+            not np.isfinite(data.get(self._capacity_attribute))
             for *_, data in self.graph.edges(keys=True, data=True)
-            if 'capacity' in data
+            if self._capacity_attribute in data
         )
         if has_nonfinite_edge_weight:
             raise ValueError(
@@ -48,9 +50,9 @@ class CapacityConstrainedFlow(FlowBase):
             )
 
         has_negative_weight = any(
-            data.get('capacity') < 0
+            data.get(self._capacity_attribute) < 0
             for *_, data in self.graph.edges(keys=True, data=True)
-            if 'capacity' in data
+            if self._capacity_attribute in data
         )
         if has_negative_weight:
             raise ValueError(

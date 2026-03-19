@@ -396,6 +396,16 @@ def test_capacity_constrained_flow_satisfies_protocol(directed_triangle):
     assert isinstance(flow, Flow)
 
 
+def test_capacity_constrained_flow_supports_custom_capacity_attribute():
+    G = nx.DiGraph([(0, 1, {'bandwidth': 0.3})])
+    flow = CapacityConstrainedFlow(G, capacity_attribute='bandwidth')
+    state = flow.initial_state([0], initial=10.0)
+
+    new_state = flow.step(state)
+
+    assert new_state[flow.node_order.index(1)] == pytest.approx(0.3)
+
+
 def test_capacity_constrained_flow_raises_on_nan_capacity():
     G = nx.DiGraph([(0, 1, {'capacity': np.nan})])
 
