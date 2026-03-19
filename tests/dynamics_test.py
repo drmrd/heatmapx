@@ -59,6 +59,19 @@ def random_digraph(
     )
 
 
+@st.composite
+def random_digraph_with_initial_state(
+    draw,
+    initial_state_st=st.floats(min_value=0.0, max_value=100.0),
+    **digraph_kwargs,
+):
+    G = draw(random_digraph(**digraph_kwargs))
+    state = draw(
+        st.fixed_dictionaries({node: initial_state_st for node in G.nodes})
+    )
+    return G, state
+
+
 def make_concrete_base(G, **kwargs):
     """Instantiate a FlowBase with no-op step and apply."""
 
@@ -175,7 +188,9 @@ def test_initial_state_supports_per_node_values(undirected_triangle):
     assert state[flow.node_order.index(2)] == pytest.approx(3.0)
 
 
-def test_initial_state_sources_dict_overrides_initial_scalar_value(undirected_triangle):
+def test_initial_state_sources_dict_overrides_initial_scalar_value(
+    undirected_triangle,
+):
     flow = make_concrete_base(undirected_triangle)
 
     state = flow.initial_state({0: 1.2}, initial=3.4)
@@ -528,18 +543,22 @@ def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights()
     )
 
 
-def test_capacity_apply_matches_iterated_steps():
-    G = nx.DiGraph([
-        (0, 1, {'capacity': 3.0}),
-        (1, 2, {'capacity': 2.0}),
-        (2, 0, {'capacity': 3.0}),
-    ])
+@hyp.given(
+    graph_state_pair=random_digraph_with_initial_state(
+        edge_data=st.fixed_dictionaries(
+            {'capacity': st.floats(min_value=0.0, max_value=10.0)}
+        )
+    ),
+    steps=st.integers(min_value=0, max_value=50),
+)
+def test_capacity_apply_matches_iterated_steps(graph_state_pair, steps):
+    G, initial_state = graph_state_pair
     flow = CapacityConstrainedFlow(G)
-    state = flow.initial_state({node: 2 * index + 1 for index, node in enumerate(G)})
+    state = flow.initial_state(initial_state)
 
     iterated_steps_state = state.copy()
-    for _ in range(5):
+    for _ in range(steps):
         iterated_steps_state = flow.step(iterated_steps_state)
 
-    apply_state = flow.apply(state, time=5)
+    apply_state = flow.apply(state, time=steps)
     np.testing.assert_allclose(apply_state, iterated_steps_state)
