@@ -526,3 +526,20 @@ def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights()
         updated_state_capacity,
         atol=1e-12,
     )
+
+
+def test_capacity_apply_matches_iterated_steps():
+    G = nx.DiGraph([
+        (0, 1, {'capacity': 3.0}),
+        (1, 2, {'capacity': 2.0}),
+        (2, 0, {'capacity': 3.0}),
+    ])
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state({node: 2 * index + 1 for index, node in enumerate(G)})
+
+    iterated_steps_state = state.copy()
+    for _ in range(5):
+        iterated_steps_state = flow.step(iterated_steps_state)
+
+    apply_state = flow.apply(state, time=5)
+    np.testing.assert_allclose(apply_state, iterated_steps_state)

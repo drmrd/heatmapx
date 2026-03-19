@@ -35,6 +35,8 @@ class CapacityConstrainedFlow(FlowBase):
         return state - outflow + inflow
 
     def apply(self, state, time, source=None):
+        for _ in range(time):
+            state = self.step(state, source)
         return state
 
     def _validate_weights(self):
