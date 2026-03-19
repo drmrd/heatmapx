@@ -420,13 +420,12 @@ def test_capacity_constrained_flow_raises_on_negative_capacity():
 def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and_capacities():
     G = nx.DiGraph([(0, 1, {'capacity': 0.3}), (1, 2, {'capacity': 1.8})])
     flow = CapacityConstrainedFlow(G)
-
     state = flow.initial_state([0, 1, 2], initial=1)
-    new_state = flow.step(state)
-
     index_0 = flow.node_order.index(0)
     index_1 = flow.node_order.index(1)
     index_2 = flow.node_order.index(2)
+
+    new_state = flow.step(state)
 
     assert new_state[index_0] == pytest.approx(0.7)
     assert new_state[index_1] == pytest.approx(0.3)
