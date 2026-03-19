@@ -432,6 +432,18 @@ def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and
     assert new_state[index_2] == pytest.approx(2.0)
 
 
+def test_capacity_constrained_flow_step_respects_per_node_initial_values():
+    G = nx.DiGraph([(0, 1), (1, 2)])
+    nx.set_edge_attributes(G, 10.0, name='capacity')
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state({0: 5.0, 2: 3.0})
+
+    new_state = flow.step(state)
+
+    assert new_state.sum() == pytest.approx(state.sum())
+    assert new_state[flow.node_order.index(1)] == pytest.approx(5.0)
+
+
 def test_capacity_constrained_flow_capacity_limits_flow_through_edge():
     G = nx.DiGraph([(0, 1)])
     G.edges[0, 1]['capacity'] = 0.5
