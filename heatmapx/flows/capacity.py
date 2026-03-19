@@ -46,3 +46,14 @@ class CapacityConstrainedFlow(FlowBase):
                 'Edges exist in the provided graph with non-finite capacity '
                 'attributes.'
             )
+
+        has_negative_weight = any(
+            data.get('capacity') < 0
+            for *_, data in self.graph.edges(keys=True, data=True)
+            if 'capacity' in data
+        )
+        if has_negative_weight:
+            raise ValueError(
+                'Edges exist in the provided graph with negative capacity '
+                'attributes.'
+            )
