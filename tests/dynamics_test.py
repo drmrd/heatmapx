@@ -183,6 +183,13 @@ def test_initial_state_sources_dict_overrides_initial_scalar_value(undirected_tr
     assert state[flow.node_order.index(0)] == pytest.approx(1.2)
 
 
+def test_initial_state_raises_on_unknown_node(undirected_triangle):
+    flow = make_concrete_base(undirected_triangle)
+
+    with pytest.raises(ValueError):
+        flow.initial_state({99: 1.0})
+
+
 def test_initial_state_returns_numpy_array(undirected_triangle):
     flow = make_concrete_base(undirected_triangle)
     source_node = list(undirected_triangle.nodes)[0]
