@@ -583,3 +583,15 @@ def test_diffusion_flow_laplacian_column_sums_equal_zero(G):  # noqa: 501
     column_sums = L.sum(axis=0)
 
     np.testing.assert_allclose(column_sums, 0.0, atol=1e-12)
+
+
+@hyp.given(G=random_digraph())
+def test_diffusion_flow_laplacian_is_one_minus_markov_transition_matrix(G):  # noqa: 501
+    diffusion_laplacian = DiffusionFlow(G).laplacian.toarray()
+    markov_transition_matrix = MarkovChainFlow(G).transition_matrix.toarray()
+
+    np.testing.assert_allclose(
+        diffusion_laplacian,
+        np.eye(diffusion_laplacian.shape[0]) - markov_transition_matrix,
+        atol=1e-12,
+    )
