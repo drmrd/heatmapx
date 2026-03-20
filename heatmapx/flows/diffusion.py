@@ -32,6 +32,6 @@ class DiffusionFlow(FlowBase):
         return np.array(len(state) * [sum(state) / len(state)])
 
     def apply(self, state, time, source=None):
-        return (1 - time / max(time, 100)) * state + time / max(
-            time, 100
-        ) * np.array(len(state) * [sum(state) / len(state)])
+        return scipy.sparse.linalg.expm_multiply(
+            -0.1 * time * self.laplacian, state
+        )

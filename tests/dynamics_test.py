@@ -631,3 +631,26 @@ def test_diffusion_flow_apply_is_not_instantaneous():
     dist_early = np.linalg.norm(early - equilibrium)
     dist_late = np.linalg.norm(late - equilibrium)
     assert dist_early > 10 * dist_late
+
+
+@hyp.given(
+    graph_state_pair=random_digraph_with_initial_state(
+        edge_data=st.fixed_dictionaries(
+            {'weight': st.floats(min_value=0.01, max_value=10.0)}
+        )
+    ),
+    t1=st.floats(min_value=0.01, max_value=10.0),
+    t2=st.floats(min_value=0.01, max_value=10.0),
+)
+def test_diffusion_flow_apply_satisfies_semigroup_property(
+    graph_state_pair, t1, t2
+):
+    # Ensure apply(apply(x, t1), t2) == apply(x, t1 + t2).
+    G, initial_state = graph_state_pair
+    flow = DiffusionFlow(G)
+    state = flow.initial_state(initial_state)
+
+    result_iterated = flow.apply(flow.apply(state, time=t1), time=t2)
+    result_one_shot = flow.apply(state, time=t1 + t2)
+
+    np.testing.assert_allclose(result_iterated, result_one_shot, atol=1e-10)
