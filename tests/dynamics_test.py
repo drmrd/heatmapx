@@ -736,3 +736,16 @@ def test_diffusion_flow_step_and_apply_with_constant_source_add_mass(
     # With source, total mass must exceed initial (source adds mass)
     assert result_step.sum() == pytest.approx(initial_mass + 1)
     assert result_apply.sum() == pytest.approx(initial_mass + 1)
+
+
+def test_diffusion_flow_respects_edge_weights():
+    G = nx.DiGraph([(0, 1, {'weight': 9.0}), (0, 2, {'weight': 1.0})])
+    flow = DiffusionFlow(G)
+    state = flow.initial_state([0])
+    index_1 = flow.node_order.index(1)
+    index_2 = flow.node_order.index(2)
+
+    result = flow.apply(state, time=0.01)
+
+    # More mass flows to node 1 (higher weight)
+    assert result[index_1] > result[index_2]
