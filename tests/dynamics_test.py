@@ -738,9 +738,14 @@ def test_diffusion_flow_step_and_apply_with_constant_source_add_mass(
     assert result_apply.sum() == pytest.approx(initial_mass + 1)
 
 
-def test_diffusion_flow_respects_edge_weights():
-    G = nx.DiGraph([(0, 1, {'weight': 9.0}), (0, 2, {'weight': 1.0})])
-    flow = DiffusionFlow(G)
+@pytest.mark.parametrize('weight_key', ('weight', 'heat', 'mass'))
+def test_diffusion_flow_respects_edge_weights(weight_key):
+    G = nx.DiGraph([(0, 1, {weight_key: 9.0}), (0, 2, {weight_key: 1.0})])
+    # Also validates that the default weight attribute is 'weight'
+    flow_weight_kwarg = (
+        {'weight': weight_key} if weight_key != 'weight' else {}
+    )
+    flow = DiffusionFlow(G, **flow_weight_kwarg)
     state = flow.initial_state([0])
     index_1 = flow.node_order.index(1)
     index_2 = flow.node_order.index(2)

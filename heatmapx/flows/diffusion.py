@@ -6,10 +6,14 @@ from flows import FlowBase
 
 
 class DiffusionFlow(FlowBase):
+    def __init__(self, graph: nx.Graph, weight: str = 'weight'):
+        super().__init__(graph)
+        self._weight = weight
+
     @property
     def laplacian(self):
         W = nx.to_scipy_sparse_array(
-            self.graph, weight='weight', nodelist=self.node_order
+            self.graph, weight=self._weight, nodelist=self.node_order
         ).T.tocsr()
 
         d_out = np.asarray(W.sum(axis=0)).flatten()
