@@ -571,3 +571,15 @@ def test_diffusion_flow_satisfies_protocol(directed_triangle):
     flow = DiffusionFlow(directed_triangle)
 
     assert isinstance(flow, Flow)
+
+
+@hyp.given(G=random_digraph())
+def test_diffusion_flow_laplacian_column_sums_equal_zero(G):  # noqa: 501
+    # L = I - P, for P a column stochastic transition matrix, so L's
+    # column sums = 0.
+    flow = DiffusionFlow(G)
+    L = flow.laplacian.toarray()
+
+    column_sums = L.sum(axis=0)
+
+    np.testing.assert_allclose(column_sums, 0.0, atol=1e-12)
