@@ -703,3 +703,20 @@ def test_diffusion_flow_apply_at_integral_times_is_iterated_step_function(
         result_iterated_step = flow.step(result_iterated_step)
 
     np.testing.assert_allclose(result_apply, result_iterated_step, atol=1e-8)
+
+
+@hyp.given(
+    node_count=st.integers(min_value=2, max_value=50),
+    initial_state_st=st.floats(min_value=0.0, max_value=100.0),
+)
+def test_diffusion_flow_converges_to_stationary_distribution_on_cycles(
+    node_count, initial_state_st
+):
+    G = nx.cycle_graph(node_count)
+    flow = DiffusionFlow(G)
+    state = flow.initial_state(list(G.nodes), initial=initial_state_st)
+
+    result = flow.apply(state, time=100.0)
+
+    expected = np.full(node_count, state.sum() / node_count)
+    np.testing.assert_allclose(result, expected, atol=1e-6)
