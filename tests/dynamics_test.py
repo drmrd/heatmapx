@@ -617,3 +617,17 @@ def test_diffusion_flow_step_moves_heat_along_edges():
     index_1 = flow.node_order.index(1)
     assert new_state[index_0] < state[index_0]
     assert new_state[index_1] > 0.0
+
+
+def test_diffusion_flow_apply_is_not_instantaneous():
+    G = nx.cycle_graph(5)
+    flow = DiffusionFlow(G)
+    state = flow.initial_state([0])
+    equilibrium = np.full(5, 1 / 5)
+
+    early = flow.apply(state, time=0.01)
+    late = flow.apply(state, time=100.0)
+
+    dist_early = np.linalg.norm(early - equilibrium)
+    dist_late = np.linalg.norm(late - equilibrium)
+    assert dist_early > 10 * dist_late

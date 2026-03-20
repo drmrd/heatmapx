@@ -32,4 +32,6 @@ class DiffusionFlow(FlowBase):
         return np.array(len(state) * [sum(state) / len(state)])
 
     def apply(self, state, time, source=None):
-        return state
+        return (1 - time / max(time, 100)) * state + time / max(
+            time, 100
+        ) * np.array(len(state) * [sum(state) / len(state)])
