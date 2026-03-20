@@ -595,3 +595,12 @@ def test_diffusion_flow_laplacian_is_one_minus_markov_transition_matrix(G):  # n
         np.eye(diffusion_laplacian.shape[0]) - markov_transition_matrix,
         atol=1e-12,
     )
+
+
+@hyp.given(G=random_digraph())
+def test_diffusion_flow_diagonal_is_nonnegative(G):
+    flow = DiffusionFlow(G)
+
+    L = flow.laplacian.toarray()
+
+    assert np.all(np.diag(L) >= -1e-12)
