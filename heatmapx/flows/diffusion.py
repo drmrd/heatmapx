@@ -29,7 +29,32 @@ class DiffusionFlow(FlowBase):
         )
 
     def step(self, state, source=None):
-        return self.apply(state, time=1, source=source)
+        return self.apply(state, time=1.0, source=source)
 
     def apply(self, state, time, source=None):
-        return scipy.sparse.linalg.expm_multiply(-time * self.laplacian, state)
+        node_count = len(state)
+
+        if source is None:
+            step_map = -self.laplacian
+        else:
+            source_column = source[:, np.newaxis]
+            # The affine `state |-> exp(-t * L) @ state + source` map
+            # lifted to a linear map in homogeneous coordinates.
+            step_map = scipy.sparse.bmat(
+                [
+                    [
+                        -self.laplacian,
+                        scipy.sparse.csr_array(source_column),
+                    ],
+                    [
+                        scipy.sparse.csr_array((1, node_count)),
+                        None,
+                    ],
+                ],
+                format='csr',
+            )
+            state = np.append(state, 1.0)
+
+        return scipy.sparse.linalg.expm_multiply(step_map * time, state)[
+            :node_count
+        ]

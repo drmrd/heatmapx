@@ -720,3 +720,19 @@ def test_diffusion_flow_converges_to_stationary_distribution_on_cycles(
 
     expected = np.full(node_count, state.sum() / node_count)
     np.testing.assert_allclose(result, expected, atol=1e-6)
+
+
+def test_diffusion_flow_step_and_apply_with_constant_source_add_mass(
+    directed_triangle,
+):
+    flow = DiffusionFlow(directed_triangle)
+    state = flow.initial_state([0])
+    initial_mass = state.sum()
+    source = flow.initial_state([0])
+
+    result_step = flow.step(state, source=source)
+    result_apply = flow.apply(state, time=1.0, source=source)
+
+    # With source, total mass must exceed initial (source adds mass)
+    assert result_step.sum() == pytest.approx(initial_mass + 1)
+    assert result_apply.sum() == pytest.approx(initial_mass + 1)
