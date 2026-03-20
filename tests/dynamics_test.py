@@ -604,3 +604,16 @@ def test_diffusion_flow_diagonal_is_nonnegative(G):
     L = flow.laplacian.toarray()
 
     assert np.all(np.diag(L) >= -1e-12)
+
+
+def test_diffusion_flow_step_moves_heat_along_edges():
+    G = nx.path_graph(3, create_using=nx.DiGraph)
+    flow = DiffusionFlow(G)
+    state = flow.initial_state([0])
+
+    new_state = flow.step(state)
+
+    index_0 = flow.node_order.index(0)
+    index_1 = flow.node_order.index(1)
+    assert new_state[index_0] < state[index_0]
+    assert new_state[index_1] > 0.0

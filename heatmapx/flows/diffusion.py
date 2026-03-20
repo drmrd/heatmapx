@@ -29,7 +29,7 @@ class DiffusionFlow(FlowBase):
         )
 
     def step(self, state, source=None):
-        return state
+        return np.array(len(state) * [sum(state) / len(state)])
 
     def apply(self, state, time, source=None):
         return state
