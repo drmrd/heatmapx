@@ -654,3 +654,27 @@ def test_diffusion_flow_apply_satisfies_semigroup_property(
     result_one_shot = flow.apply(state, time=t1 + t2)
 
     np.testing.assert_allclose(result_iterated, result_one_shot, atol=1e-10)
+
+
+@hyp.given(
+    graph_state_pair=random_digraph_with_initial_state(
+        edge_data=st.fixed_dictionaries(
+            {'weight': st.floats(min_value=0.01, max_value=10.0)}
+        ),
+        initial_state_st=st.floats(min_value=0.0, max_value=10.0),
+    ),
+    dt=st.floats(min_value=1e-8, max_value=1e-5),
+)
+def test_diffusion_flow_apply_small_time_approximates_laplacian(
+    graph_state_pair, dt
+):
+    # For small dt, state(dt) ≈ state(0) - dt * L @ state(0).
+    G, initial_state = graph_state_pair
+    flow = DiffusionFlow(G)
+    state = flow.initial_state(initial_state)
+    L = flow.laplacian.toarray()
+
+    result = flow.apply(state, time=dt)
+
+    first_order_approximation = state - dt * (L @ state)
+    np.testing.assert_allclose(result, first_order_approximation, atol=1e-8)
