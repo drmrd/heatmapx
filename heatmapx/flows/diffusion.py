@@ -29,7 +29,7 @@ class DiffusionFlow(FlowBase):
         )
 
     def step(self, state, source=None):
-        return np.array(len(state) * [sum(state) / len(state)])
+        return self.apply(state, time=1, source=source)
 
     def apply(self, state, time, source=None):
         return scipy.sparse.linalg.expm_multiply(-time * self.laplacian, state)
