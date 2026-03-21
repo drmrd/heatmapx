@@ -677,6 +677,12 @@ def test_diffusion_flow_satisfies_protocol(directed_triangle):
     assert isinstance(flow, Flow)
 
 
+@pytest.mark.parametrize('offending_weight', (np.inf, -np.inf, np.nan))
+def test_diffusion_flow_raises_on_nonfinite_edge_weights(offending_weight):
+    with pytest.raises(ValueError, match='finite'):
+        DiffusionFlow(nx.DiGraph([(0, 1, {'weight': offending_weight})]))
+
+
 @hyp.given(G=random_digraph())
 def test_diffusion_flow_laplacian_column_sums_equal_zero(G):  # noqa: E501
     # L = I - P, for P a column stochastic transition matrix, so L's

@@ -11,6 +11,7 @@ class DiffusionFlow(FlowBase):
     def __init__(self, graph: nx.Graph, weight: str = 'weight'):
         super().__init__(graph)
         self._weight = weight
+        self._validate_weights()
 
     @cached_property
     def laplacian(self):
@@ -64,3 +65,15 @@ class DiffusionFlow(FlowBase):
         return scipy.sparse.linalg.expm_multiply(step_map * time, state)[
             :node_count
         ]
+
+    def _validate_weights(self):
+        has_nonfinite_edge_weight = any(
+            not np.isfinite(data.get(self._weight))
+            for *_, data in self.graph.edges(keys=True, data=True)
+            if self._weight in data
+        )
+        if has_nonfinite_edge_weight:
+            raise ValueError(
+                f'Edges exist in the provided graph with non-finite '
+                f'{self._weight} attributes.'
+            )
