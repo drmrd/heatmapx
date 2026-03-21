@@ -678,7 +678,7 @@ def test_diffusion_flow_satisfies_protocol(directed_triangle):
 
 
 @hyp.given(G=random_digraph())
-def test_diffusion_flow_laplacian_column_sums_equal_zero(G):  # noqa: 501
+def test_diffusion_flow_laplacian_column_sums_equal_zero(G):  # noqa: E501
     # L = I - P, for P a column stochastic transition matrix, so L's
     # column sums = 0.
     flow = DiffusionFlow(G)
@@ -819,6 +819,31 @@ def test_diffusion_flow_apply_at_integral_times_is_iterated_step_function(
     result_iterated_step = state.copy()
     for _ in range(dt):
         result_iterated_step = flow.step(result_iterated_step)
+
+    np.testing.assert_allclose(result_apply, result_iterated_step, atol=1e-8)
+
+
+@hyp.given(
+    graph_state_pair=random_digraph_with_initial_state(
+        edge_data=st.fixed_dictionaries(
+            {'weight': st.floats(min_value=0.01, max_value=10.0)}
+        ),
+        initial_state_st=st.floats(min_value=0.0, max_value=10.0),
+    ),
+    dt=st.integers(min_value=1, max_value=10),
+)
+def test_diffusion_flow_apply_with_source_at_integral_times_is_iterated_step_function(  # noqa: E501
+    graph_state_pair, dt
+):
+    G, initial_state = graph_state_pair
+    flow = DiffusionFlow(G)
+    state = flow.initial_state(initial_state)
+    source = flow.initial_state(list(G.nodes)[:3], initial=3.0)
+
+    result_apply = flow.apply(state, time=dt, source=source)
+    result_iterated_step = state.copy()
+    for _ in range(dt):
+        result_iterated_step = flow.step(result_iterated_step, source=source)
 
     np.testing.assert_allclose(result_apply, result_iterated_step, atol=1e-8)
 
