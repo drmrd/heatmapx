@@ -894,6 +894,29 @@ def test_diffusion_flow_converges_to_stationary_distribution_on_cycles(
     np.testing.assert_allclose(result, expected, atol=1e-6)
 
 
+@hyp.given(
+    graph_state_pair=random_digraph_with_initial_state(
+        edge_data=st.fixed_dictionaries(
+            {'weight': st.floats(min_value=0.01, max_value=10.0)}
+        ),
+        initial_state_st=st.floats(min_value=0.0, max_value=100.0),
+    ),
+)
+def test_diffusion_flow_step_and_apply_without_source_conserves_mass(
+    graph_state_pair,
+):
+    G, initial_state = graph_state_pair
+    flow = DiffusionFlow(G)
+    state = flow.initial_state(initial_state)
+    initial_mass = state.sum()
+
+    new_state_step = flow.step(state)
+    new_state_apply = flow.apply(state, time=100.0)
+
+    assert new_state_step.sum() == pytest.approx(initial_mass, abs=1e-10)
+    assert new_state_apply.sum() == pytest.approx(initial_mass, abs=1e-10)
+
+
 def test_diffusion_flow_step_and_apply_with_constant_source_add_mass(
     directed_triangle,
 ):
