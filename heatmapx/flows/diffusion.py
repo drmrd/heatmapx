@@ -1,3 +1,5 @@
+from functools import cached_property
+
 import networkx as nx
 import numpy as np
 import scipy
@@ -10,7 +12,7 @@ class DiffusionFlow(FlowBase):
         super().__init__(graph)
         self._weight = weight
 
-    @property
+    @cached_property
     def laplacian(self):
         W = nx.to_scipy_sparse_array(
             self.graph, weight=self._weight, nodelist=self.node_order

@@ -598,12 +598,26 @@ def test_diffusion_flow_laplacian_is_one_minus_markov_transition_matrix(G):  # n
 
 
 @hyp.given(G=random_digraph())
-def test_diffusion_flow_diagonal_is_nonnegative(G):
+def test_diffusion_flow_laplacian_diagonal_is_nonnegative(G):
     flow = DiffusionFlow(G)
 
     L = flow.laplacian.toarray()
 
     assert np.all(np.diag(L) >= -1e-12)
+
+
+def test_diffusion_flow_laplacian_is_cached(directed_triangle, mocker):
+    flow = DiffusionFlow(directed_triangle)
+
+    to_scipy_sparse_array_mock = mocker.patch(
+        'heatmapx.flows.diffusion.nx.to_scipy_sparse_array',
+        wraps=nx.to_scipy_sparse_array,
+    )
+
+    flow.laplacian
+    flow.laplacian
+
+    to_scipy_sparse_array_mock.assert_called_once()
 
 
 def test_diffusion_flow_step_moves_heat_along_edges():
