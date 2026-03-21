@@ -622,6 +622,30 @@ def test_capacity_constrained_flow_apply_matches_iterated_steps(
     np.testing.assert_allclose(apply_state, iterated_steps_state)
 
 
+@hyp.given(
+    graph_state_pair=random_digraph_with_initial_state(
+        edge_data=st.fixed_dictionaries(
+            {'capacity': st.floats(min_value=0.0, max_value=10.0)}
+        )
+    ),
+    steps=st.integers(min_value=0, max_value=50),
+)
+def test_capacity_constrained_flow_apply_matches_iterated_steps_with_source(
+    graph_state_pair, steps
+):
+    G, initial_state = graph_state_pair
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state(initial_state)
+    source = flow.initial_state(list(G.nodes)[:3], initial=3.0)
+
+    iterated_steps_state = state.copy()
+    for _ in range(steps):
+        iterated_steps_state = flow.step(iterated_steps_state, source)
+
+    apply_state = flow.apply(state, time=steps, source=source)
+    np.testing.assert_allclose(apply_state, iterated_steps_state)
+
+
 def test_diffusion_flow_satisfies_protocol(directed_triangle):
     flow = DiffusionFlow(directed_triangle)
 
