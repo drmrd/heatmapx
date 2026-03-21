@@ -536,6 +536,45 @@ def test_capacity_constrained_flow_step_conserves_total_mass_without_source(
     assert np.all(state >= -1e-15)
 
 
+def test_capacity_constrained_flow_step_source_increases_outflow():
+    G = nx.DiGraph([(0, 1, {'capacity': 3.0})])
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state([0], initial=1.0)
+    source = flow.initial_state([0], initial=1.0)
+
+    without_source = flow.step(state)
+    with_source = flow.step(state, source=source)
+
+    index_1 = flow.node_order.index(1)
+    assert without_source[index_1] == pytest.approx(1.0)
+    assert with_source[index_1] == pytest.approx(2.0)
+
+
+def test_capacity_constrained_flow_step_source_clamped_by_capacity():
+    G = nx.DiGraph([(0, 1, {'capacity': 0.5})])
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state([0], initial=2.0)
+    source = flow.initial_state([0], initial=3.0)
+    index_0 = flow.node_order.index(0)
+    index_1 = flow.node_order.index(1)
+
+    new_state = flow.step(state, source=source)
+
+    assert new_state[index_1] == pytest.approx(0.5)
+    assert new_state[index_0] == pytest.approx(4.5)
+
+
+def test_capacity_constrained_flow_step_with_source_adds_mass():
+    G = nx.DiGraph([(0, 1, {'capacity': 0.5})])
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state([0], initial=2.0)
+    source = flow.initial_state([0], initial=3.0)
+
+    new_state = flow.step(state, source=source)
+
+    assert new_state.sum() == pytest.approx(state.sum() + source.sum())
+
+
 def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights():  # noqa: E501
     G = nx.DiGraph(
         [

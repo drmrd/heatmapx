@@ -14,17 +14,19 @@ class CapacityConstrainedFlow(FlowBase):
         self._validate_weights()
 
     def step(self, state, source=None):
+        effective_state = state if source is None else state + source
+
         # Normalized and unnormalized edgewise capacity matrices of the
         # graph
         P, C = self._capacity_matrices
 
         # Edgewise capacity-constrained flow matrix:
         #     F[i,j] = min(P[i,j] * state[j], C[i,j])
-        F = P.multiply(state).minimum(C)
+        F = P.multiply(effective_state).minimum(C)
 
         outflow = np.asarray(F.sum(axis=0)).flatten()
         inflow = np.asarray(F.sum(axis=1)).flatten()
-        return state - outflow + inflow
+        return effective_state - outflow + inflow
 
     def apply(self, state, time, source=None):
         for _ in range(time):
