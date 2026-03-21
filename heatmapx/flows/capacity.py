@@ -1,3 +1,5 @@
+from functools import cached_property
+
 import networkx as nx
 import numpy as np
 
@@ -12,22 +14,9 @@ class CapacityConstrainedFlow(FlowBase):
         self._validate_weights()
 
     def step(self, state, source=None):
-        # Calculate the unnormalized capacities of each edge in the
+        # Normalized and unnormalized edgewise capacity matrices of the
         # graph
-        C = nx.to_scipy_sparse_array(
-            self.graph,
-            weight=self._capacity_attribute,
-            nodelist=self.node_order,
-            dtype=np.float64,
-        ).T.tocsr()
-
-        # Normalize based on the out-capacity of each node
-        d_out = np.asarray(C.sum(axis=0)).flatten()
-        d_out_inv = np.zeros_like(d_out, dtype=float)
-        np.divide(1.0, d_out, out=d_out_inv, where=d_out != 0)
-
-        # P = C @ diag(d_out^{-1}); column-stochastic
-        P = C.multiply(d_out_inv)
+        P, C = self._capacity_matrices
 
         # Edgewise capacity-constrained flow matrix:
         #     F[i,j] = min(P[i,j] * state[j], C[i,j])
@@ -64,3 +53,23 @@ class CapacityConstrainedFlow(FlowBase):
                 'Edges exist in the provided graph with negative capacity '
                 'attributes.'
             )
+
+    @cached_property
+    def _capacity_matrices(self):
+        # Calculate the unnormalized capacities of each edge in the
+        # graph
+        C = nx.to_scipy_sparse_array(
+            self.graph,
+            weight=self._capacity_attribute,
+            nodelist=self.node_order,
+            dtype=np.float64,
+        ).T.tocsr()
+
+        # Normalize based on the out-capacity of each node
+        d_out = np.asarray(C.sum(axis=0)).flatten()
+        d_out_inv = np.zeros_like(d_out, dtype=float)
+        np.divide(1.0, d_out, out=d_out_inv, where=d_out != 0)
+
+        # P = C @ diag(d_out^{-1}); column-stochastic
+        P = C.multiply(d_out_inv)
+        return P, C

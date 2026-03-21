@@ -443,6 +443,22 @@ def test_capacity_constrained_flow_raises_on_negative_capacity():
         CapacityConstrainedFlow(G)
 
 
+def test_capacity_constrained_flow_capacity_matrices_are_cached(
+    directed_triangle, mocker
+):
+    flow = CapacityConstrainedFlow(directed_triangle)
+    state = flow.initial_state(list(directed_triangle.nodes)[:1])
+    to_scipy_sparse_array_mock = mocker.patch(
+        'heatmapx.flows.capacity.nx.to_scipy_sparse_array',
+        wraps=nx.to_scipy_sparse_array,
+    )
+
+    flow.step(state)
+    flow.step(state)
+
+    to_scipy_sparse_array_mock.assert_called_once()
+
+
 def test_capacity_constrained_flow_step_changes_node_weights_based_on_states_and_capacities():  # noqa: E501
     G = nx.DiGraph([(0, 1, {'capacity': 0.3}), (1, 2, {'capacity': 1.8})])
     flow = CapacityConstrainedFlow(G)
