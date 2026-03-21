@@ -260,6 +260,21 @@ def test_to_graph_node_values_match_state_vector(directed_triangle):
         assert heated_graph.nodes[node]['heat'] == pytest.approx(state[index])
 
 
+def test_to_graph_preserves_original_node_and_edge_attributes():
+    G = nx.DiGraph([(0, 1, {'weight': 2.5, 'emoji': '🐧'})])
+    G.nodes[0]['color'] = 'red'
+    G.nodes[1]['color'] = 'blue'
+    flow = make_concrete_base(G)
+    state = flow.initial_state([0])
+
+    result = flow.to_graph(state)
+
+    assert result.nodes[0]['color'] == 'red'
+    assert result.nodes[1]['color'] == 'blue'
+    assert result.edges[0, 1, 0]['weight'] == 2.5
+    assert result.edges[0, 1, 0]['emoji'] == '🐧'
+
+
 def test_markov_chain_satisfies_protocol(undirected_triangle):
     flow = MarkovChainFlow(undirected_triangle)
     assert isinstance(flow, Flow)
