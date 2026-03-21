@@ -149,6 +149,16 @@ def test_node_order_is_deterministic_across_instances(undirected_triangle):
     assert instance1_node_order == instance2_node_order
 
 
+def test_initial_state_given_empty_input_is_zero_state(undirected_triangle):
+    flow = make_concrete_base(undirected_triangle)
+
+    state_empty_list = flow.initial_state([])
+    state_empty_dict = flow.initial_state({})
+
+    assert (state_empty_list == state_empty_dict).all()
+    assert (state_empty_list == 0).all()
+
+
 def test_initial_state_is_zero_except_at_sources(undirected_triangle):
     flow = make_concrete_base(undirected_triangle)
     source_node = list(undirected_triangle.nodes)[0]
