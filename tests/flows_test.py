@@ -468,6 +468,24 @@ def test_capacity_constrained_flow_raises_on_negative_capacity():
         CapacityConstrainedFlow(G)
 
 
+def test_capacity_constrained_flow_zero_capacity_blocks_flow():
+    G = nx.DiGraph([(0, 1, {'capacity': 0.0})])
+    flow = CapacityConstrainedFlow(G)
+    state = flow.initial_state([0], initial=10.0)
+
+    new_state = flow.step(state)
+
+    assert new_state[flow.node_order.index(0)] == pytest.approx(10.0)
+    assert new_state[flow.node_order.index(1)] == pytest.approx(0.0)
+
+
+def test_capacity_constrained_flow_warns_on_all_zero_capacities():
+    G = nx.DiGraph([(0, 1, {'capacity': 0.0}), (1, 2, {'capacity': 0.0})])
+
+    with pytest.warns(UserWarning, match=r'\bzero\b.*\bpositive\b'):
+        CapacityConstrainedFlow(G)
+
+
 def test_capacity_constrained_flow_capacity_matrices_are_cached(
     directed_triangle, mocker
 ):

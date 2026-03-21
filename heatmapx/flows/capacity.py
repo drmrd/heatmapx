@@ -1,3 +1,4 @@
+import warnings
 from functools import cached_property
 
 import networkx as nx
@@ -54,6 +55,19 @@ class CapacityConstrainedFlow(FlowBase):
             raise ValueError(
                 'Edges exist in the provided graph with negative capacity '
                 'attributes.'
+            )
+
+        has_positive_weight = any(
+            data.get(self._capacity_attribute) > 0
+            for *_, data in self.graph.edges(keys=True, data=True)
+            if self._capacity_attribute in data
+        )
+        if not has_positive_weight:
+            warnings.warn(
+                f'All {self._capacity_attribute} values are zero in this '
+                'flow. At least one value must be positive for the flow to '
+                "alter the graph's current state.",
+                UserWarning,
             )
 
     @cached_property
