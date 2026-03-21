@@ -683,7 +683,18 @@ def test_diffusion_flow_raises_on_nonfinite_edge_weights(offending_weight):
         DiffusionFlow(nx.DiGraph([(0, 1, {'weight': offending_weight})]))
 
 
-@hyp.given(G=random_digraph())
+def test_diffusion_flow_raises_on_negative_edge_weights():
+    with pytest.raises(ValueError, match='negative'):
+        DiffusionFlow(nx.DiGraph([(0, 1, {'weight': -1.0})]))
+
+
+@hyp.given(
+    G=random_digraph(
+        edge_data=st.fixed_dictionaries(
+            {'weight': st.floats(min_value=0.01, max_value=10.0)}
+        )
+    )
+)
 def test_diffusion_flow_laplacian_column_sums_equal_zero(G):  # noqa: E501
     # L = I - P, for P a column stochastic transition matrix, so L's
     # column sums = 0.
@@ -695,7 +706,13 @@ def test_diffusion_flow_laplacian_column_sums_equal_zero(G):  # noqa: E501
     np.testing.assert_allclose(column_sums, 0.0, atol=1e-12)
 
 
-@hyp.given(G=random_digraph())
+@hyp.given(
+    G=random_digraph(
+        edge_data=st.fixed_dictionaries(
+            {'weight': st.floats(min_value=0.01, max_value=10.0)}
+        )
+    )
+)
 def test_diffusion_flow_laplacian_is_one_minus_markov_transition_matrix(G):  # noqa: 501
     diffusion_laplacian = DiffusionFlow(G).laplacian.toarray()
     markov_transition_matrix = MarkovChainFlow(G).transition_matrix.toarray()
@@ -707,7 +724,13 @@ def test_diffusion_flow_laplacian_is_one_minus_markov_transition_matrix(G):  # n
     )
 
 
-@hyp.given(G=random_digraph())
+@hyp.given(
+    G=random_digraph(
+        edge_data=st.fixed_dictionaries(
+            {'weight': st.floats(min_value=0.01, max_value=10.0)}
+        )
+    )
+)
 def test_diffusion_flow_laplacian_diagonal_is_nonnegative(G):
     flow = DiffusionFlow(G)
 

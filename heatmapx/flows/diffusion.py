@@ -77,3 +77,14 @@ class DiffusionFlow(FlowBase):
                 f'Edges exist in the provided graph with non-finite '
                 f'{self._weight} attributes.'
             )
+
+        has_negative_weight = any(
+            data.get(self._weight) < 0
+            for *_, data in self.graph.edges(keys=True, data=True)
+            if self._weight in data
+        )
+        if has_negative_weight:
+            raise ValueError(
+                'Edges exist in the provided graph with negative '
+                f'{self._weight} attributes.'
+            )
