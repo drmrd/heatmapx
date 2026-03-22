@@ -642,6 +642,19 @@ def test_capacity_constrained_flow_equals_markov_when_capacities_match_weights()
     )
 
 
+def test_capacity_constrained_flow_apply_time_zero_returns_copy_of_same_state(
+    directed_triangle,
+):
+    nx.set_edge_attributes(directed_triangle, 1.0, name='capacity')
+    flow = CapacityConstrainedFlow(directed_triangle)
+    state = flow.initial_state([0], initial=5.0)
+
+    result = flow.apply(state, time=0)
+
+    assert result is not state
+    np.testing.assert_array_equal(result, state)
+
+
 @hyp.given(
     graph_state_pair=random_digraph_with_initial_state(
         edge_data=st.fixed_dictionaries(
